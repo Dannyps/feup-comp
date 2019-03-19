@@ -128,19 +128,20 @@ void MethodDeclaration() #void: {}
 void Statement() #void: {}
 {
     <OPEN_CURLY_BRACKET> (Statement())* <CLOSE_CURLY_BRACKET> |
-    <IF> <OPEN_PARENTHESES>  <CLOSE_PARENTHESES> Statement() <ELSE> Statement() |
+    <IF> <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES> Statement() <ELSE> Statement() |
     <WHILE> <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES> Statement()
     Expression() <PVIRG>
     <IDENTIFIER> <EQUAL> Expression() <PVIRG>
     <IDENTIFIER> <OPEN_BRACKET> Expression() <CLOSE_BRACKET> <EQUAL> Expression() <PVIRG>
 }
 
-void Expression() #void: {}
+void Term() #void: {}
 {
 
-    Expression1() <OPEN_BRACKET> Expression1() <CLOSE_BRACKET> |
 
-    Expression1() <DOT> <IDENTIFIER> <OPEN_PARENTHESES> [Expression() {<VIRG> Expression()}] <CLOSE_PARENTHESES> |
+    //Expression1() <OPEN_BRACKET> Expression1() <CLOSE_BRACKET> |
+
+    //Expression1() <DOT> <IDENTIFIER> <OPEN_PARENTHESES> [Expression() {<VIRG> Expression()}] <CLOSE_PARENTHESES> |
 
     <INTEGERLITERAL> |
     <TRUE> |
@@ -154,14 +155,18 @@ void Expression() #void: {}
     <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES>
 }
 
-void Expression1() #void: {} {
-    Expression1() <DOT> <LENGTH> |
+void Expression() #void: {} {
 
-    Expression2() (<AND> | <LESS> | <SUM> | <SUB> | <MULT> | <DIV>) Expression3()
+    Expression2() (
+        (<SUM> | <SUB>) Expression2() |
+        (<LESS> | <GREATER> | <AND>) Expression2()
+    )?
 }
 
 void Expression2() #void: {} {
-    <DOT>
+    Term() ((<MULT> | <DIV>) Term())?
+
+
 }
 
 void Expression3() #void: {} {
