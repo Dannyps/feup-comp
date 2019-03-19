@@ -8,7 +8,7 @@ class MyClass {
     public int getX (boolean exist) {
         int y;
 
-        if(y < 10) {
+        if(1+2 < 10*3) {
 
         } else {
 
