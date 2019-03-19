@@ -1,0 +1,169 @@
+options {
+    LOOKAHEAD=1;
+}
+PARSER_BEGIN(Fac)
+import java.io.FileReader;
+import java.io.FileNotFoundException;
+
+public class Fac {
+    public int computeFac(SimpleNode node) {
+        return 0;
+    }
+
+    public static void main(String[] args) throws ParseException {
+
+        try {
+            FileReader fileReader = new FileReader("text.txt");
+            Fac fac = new Fac(fileReader);
+            SimpleNode root = fac.Program();
+    
+            root.dump("");
+    
+            //System.out.println("Valor da expressão: "+fac.computeFac(root));
+            System.exit(0);
+            
+        } catch (FileNotFoundException e) {
+            System.exit(0);
+            //TODO: handle exception
+        }
+        //Fac fac = new Fac(System.in);
+    }
+}
+PARSER_END(Fac)
+
+SKIP :
+{
+    " " | "\r" | "\t" | "\n"
+}
+TOKEN:
+{
+    < MAIN : "main" > |
+    < STATIC : "static" > |
+    < VOID : "void" > |
+    < PUBLIC : "public" > |
+    < CLASS : "class" > |
+    < STRING : "String" > |
+    < IF : "if" > |
+    < ELSE : "else" > |
+    < WHILE : "while" > |
+    < RETURN : "return" > |
+    < INT : "int" > |
+    < BOOLEAN : "boolean" > |
+    < PVIRG : ";" > |
+    < VIRG : "," > |
+    < SUM : "+" > |
+    < SUB : "-" > |
+    < MULT : "*" > |
+    < DIV : "/" > |
+    < EQUAL : "=" > |
+    < OPEN_CURLY_BRACKET : "{" > |
+    < CLOSE_CURLY_BRACKET : "}" > |
+
+    < OPEN_PARENTHESES : "(" > |
+    < CLOSE_PARENTHESES : ")" > |
+
+    < OPEN_BRACKET : "[" > |
+    < CLOSE_BRACKET : "]" > |
+
+    < NEW : "new" > |
+    < THIS : "this" > |
+    < TRUE : "true" > |
+    < FALSE : "false" > |
+    < LENGTH : "length" > |
+    < NOT : "!" > |
+
+    < AND : "&&" > |
+    < LESS : "<" > |
+    < GREATER : ">" > |
+    < DOT : "." > |
+
+
+    < INTEGERLITERAL : ("-")?(["0"-"9"])+ > |
+
+    < IDENTIFIER : ["a"-"z","A"-"Z","_","$"] (["a"-"z","A"-"Z","_","$","0"-"9"])* >
+}
+
+SimpleNode Program(): {}
+{
+    ClassDeclaration() <EOF> {
+        return jjtThis;
+    }
+}
+
+void ClassDeclaration() #void: {}
+{
+    <CLASS> <IDENTIFIER> <OPEN_CURLY_BRACKET> VarDeclaration() MainDeclaration() MethodDeclaration() <CLOSE_CURLY_BRACKET>
+}
+
+void Type() #void: {}
+{
+    <BOOLEAN> | 
+    <INT> | 
+    <IDENTIFIER>
+}
+
+void VarDeclaration() #void: {}
+{
+    Type() <IDENTIFIER> <PVIRG>
+}
+
+void MainDeclaration() #void: {}
+{
+    <PUBLIC> <STATIC> <VOID> <MAIN> <OPEN_PARENTHESES> <STRING> <OPEN_BRACKET><CLOSE_BRACKET> <IDENTIFIER> <CLOSE_PARENTHESES> <OPEN_CURLY_BRACKET>
+        (VarDeclaration())*
+        (Statement())*
+    <CLOSE_CURLY_BRACKET>
+}
+
+void MethodDeclaration() #void: {}
+{
+    <PUBLIC> Type() <IDENTIFIER> <OPEN_PARENTHESES> [Type() <IDENTIFIER>] ("," Type() <IDENTIFIER>)* <CLOSE_PARENTHESES> 
+    <OPEN_CURLY_BRACKET> 
+        VarDeclaration() 
+        Statement() 
+        <RETURN> Expression() <PVIRG> 
+    <CLOSE_CURLY_BRACKET>
+}
+
+void Statement() #void: {}
+{
+    <OPEN_CURLY_BRACKET> (Statement())* <CLOSE_CURLY_BRACKET> |
+    <IF> <OPEN_PARENTHESES>  <CLOSE_PARENTHESES> Statement() <ELSE> Statement() |
+    <WHILE> <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES> Statement()
+    Expression() <PVIRG>
+    <IDENTIFIER> <EQUAL> Expression() <PVIRG>
+    <IDENTIFIER> <OPEN_BRACKET> Expression() <CLOSE_BRACKET> <EQUAL> Expression() <PVIRG>
+}
+
+void Expression() #void: {}
+{
+
+    Expression1() <OPEN_BRACKET> Expression1() <CLOSE_BRACKET> |
+
+    Expression1() <DOT> <IDENTIFIER> <OPEN_PARENTHESES> [Expression() {<VIRG> Expression()}] <CLOSE_PARENTHESES> |
+
+    <INTEGERLITERAL> |
+    <TRUE> |
+    <FALSE> |
+    <IDENTIFIER> |
+    <THIS> |
+    LOOKAHEAD(2)
+    <NEW> <INT> <OPEN_BRACKET> Expression() <CLOSE_BRACKET> |
+    <NEW> <IDENTIFIER> <OPEN_PARENTHESES> <CLOSE_PARENTHESES> |
+    <NOT> Expression() |
+    <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES>
+}
+
+void Expression1() #void: {} {
+    Expression1() <DOT> <LENGTH> |
+
+    Expression2() (<AND> | <LESS> | <SUM> | <SUB> | <MULT> | <DIV>) Expression3()
+}
+
+void Expression2() #void: {} {
+    <DOT>
+}
+
+void Expression3() #void: {} {
+    <DOT>
+}
