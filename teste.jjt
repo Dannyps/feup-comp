@@ -150,13 +150,13 @@ void Term() #void: {}
 }
 
 void Expression() #void: {} {
-    Expression2() ((<SUM> | <SUB>) Expression2())?
+    Expression2() ((<LESS> | <GREATER> | <AND>) Expression2())?
 }
 
 void Expression2() #void: {} {
-    Expression3() ((<MULT> | <DIV>) Expression3())?
+    Expression3() ((<SUM> | <SUB>) Expression3())?
 }
 
 void Expression3() #void: {} {
-    Term() ((<LESS> | <GREATER> | <AND>) Term())?
+    Term() ((<MULT> | <DIV>) Term())?
 }
