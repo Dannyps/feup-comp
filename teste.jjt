@@ -28,6 +28,10 @@ public class Fac {
         }
         //Fac fac = new Fac(System.in);
     }
+
+    public static void showError(ParseException e, String errorMessage) {
+        System.out.println(errorMessage);
+    }
 }
 PARSER_END(Fac)
 
@@ -40,7 +44,7 @@ TOKEN:
     < MAIN : "main" > |
     < STATIC : "static" > |
     < VOID : "void" > |
-    < PUBLIC : "public" > |
+    < CLASSVISIBILITY : "public" > |
     < CLASS : "class" > |
     < STRING : "String" > |
     < IF : "if" > |
@@ -58,105 +62,155 @@ TOKEN:
     < EQUAL : "=" > |
     < OPEN_CURLY_BRACKET : "{" > |
     < CLOSE_CURLY_BRACKET : "}" > |
-
     < OPEN_PARENTHESES : "(" > |
     < CLOSE_PARENTHESES : ")" > |
-
     < OPEN_BRACKET : "[" > |
     < CLOSE_BRACKET : "]" > |
-
     < NEW : "new" > |
     < THIS : "this" > |
     < TRUE : "true" > |
     < FALSE : "false" > |
     < LENGTH : "length" > |
+    < EXTENDS : "extends" > |
     < NOT : "!" > |
-
     < AND : "&&" > |
     < LESS : "<" > |
     < GREATER : ">" > |
     < DOT : "." > |
-
-
-    < INTEGERLITERAL : ("-")?(["0"-"9"])+ > |
-
+    < INTEGERLITERAL : (["0"-"9"])+ > |
     < IDENTIFIER : ["a"-"z","A"-"Z","_","$"] (["a"-"z","A"-"Z","_","$","0"-"9"])* >
 }
 
 SimpleNode Program(): {}
 {
-    ClassDeclaration() <EOF> {
+    ClassDeclaration() <EOF> 
+    {
         return jjtThis;
     }
 }
 
-void ClassDeclaration() #void: {}
+void ClassDeclaration() : {}
 {
-    <CLASS> <IDENTIFIER> <OPEN_CURLY_BRACKET> VarDeclaration() MainDeclaration() MethodDeclaration() <CLOSE_CURLY_BRACKET>
+    <CLASS> <IDENTIFIER> (<EXTENDS> <IDENTIFIER>)? <OPEN_CURLY_BRACKET>
+    (
+        (VarDeclaration())* 
+        (<CLASSVISIBILITY> (MainDeclaration() | MethodDeclaration()))*
+    )
+    <CLOSE_CURLY_BRACKET>
+}
+
+void VarDeclaration() : {}
+{
+    Type() <IDENTIFIER> <PVIRG>
+}
+
+void MainDeclaration() : {}
+{
+    <STATIC> <VOID> <MAIN> <OPEN_PARENTHESES> <STRING> <OPEN_BRACKET><CLOSE_BRACKET> <IDENTIFIER> <CLOSE_PARENTHESES> <OPEN_CURLY_BRACKET>
+    (
+        FunctionBody()
+    )
+    <CLOSE_CURLY_BRACKET>
+}
+
+void MethodDeclaration() : {}
+{
+    Type() <IDENTIFIER> <OPEN_PARENTHESES> (Type() <IDENTIFIER> (<VIRG> Type() <IDENTIFIER>)*)? <CLOSE_PARENTHESES> <OPEN_CURLY_BRACKET> 
+    (
+        FunctionBody()
+        <RETURN> Expression() <PVIRG>
+    )
+    <CLOSE_CURLY_BRACKET>
+}
+
+void FunctionBody() #void : {}
+{
+    (LOOKAHEAD(2) VarDeclaration())*
+    (Statement())*
 }
 
 void Type() #void: {}
 {
     <BOOLEAN> | 
-    <INT> | 
+    <INT> (<OPEN_BRACKET> <CLOSE_BRACKET>)? | 
     <IDENTIFIER>
 }
 
-void VarDeclaration() #void: {}
-{
-    Type() <IDENTIFIER> <PVIRG>
-}
-
-void MainDeclaration() #void: {}
-{
-    <PUBLIC> <STATIC> <VOID> <MAIN> <OPEN_PARENTHESES> <STRING> <OPEN_BRACKET><CLOSE_BRACKET> <IDENTIFIER> <CLOSE_PARENTHESES> <OPEN_CURLY_BRACKET>
-        (VarDeclaration())*
-        (Statement())*
-    <CLOSE_CURLY_BRACKET>
-}
-
-void MethodDeclaration() #void: {}
-{
-    <PUBLIC> Type() <IDENTIFIER> <OPEN_PARENTHESES> [Type() <IDENTIFIER>] ("," Type() <IDENTIFIER>)* <CLOSE_PARENTHESES> 
-    <OPEN_CURLY_BRACKET> 
-        VarDeclaration() 
-        Statement() 
-        <RETURN> Expression() <PVIRG> 
-    <CLOSE_CURLY_BRACKET>
-}
-
-void Statement() #void: {}
+void Statement() : {}
 {
     <OPEN_CURLY_BRACKET> (Statement())* <CLOSE_CURLY_BRACKET> |
-    <IF> <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES> Statement() <ELSE> Statement() |
-    <WHILE> <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES> Statement()
-    Expression() <PVIRG>
-    <IDENTIFIER> <EQUAL> Expression() <PVIRG>
-    <IDENTIFIER> <OPEN_BRACKET> Expression() <CLOSE_BRACKET> <EQUAL> Expression() <PVIRG>
+    If() |
+    While() |
+    Expression()
+    (
+        <PVIRG> |
+        <EQUAL> Expression() <PVIRG>
+    )
 }
 
-void Term() #void: {}
+void If() #void : {}
+{
+    try {
+        <IF> <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES> Statement() <ELSE> Statement()
+    }
+    catch (ParseException e) {
+        showError(e, "if error");
+        System.exit(0);
+    }
+}
+
+void While() #void : {}
+{
+    try {
+        <WHILE> <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES> Statement()
+    }
+    catch (ParseException e) {
+        showError(e, "while error");
+        System.exit(0);
+    }
+}
+
+void Term() #void : {}
 {
     <INTEGERLITERAL> |
     <TRUE> |
     <FALSE> |
     <IDENTIFIER> |
     <THIS> |
-    LOOKAHEAD(2)
-    <NEW> <INT> <OPEN_BRACKET> Expression() <CLOSE_BRACKET> |
-    <NEW> <IDENTIFIER> <OPEN_PARENTHESES> <CLOSE_PARENTHESES> |
+    <NEW>
+    (
+        <INT> <OPEN_BRACKET> Expression() <CLOSE_BRACKET> | 
+        <IDENTIFIER> <OPEN_PARENTHESES> <CLOSE_PARENTHESES>
+    ) |
     <NOT> Term() |
     <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES>
 }
 
-void Expression() #void: {} {
-    Expression2() ((<LESS> | <GREATER> | <AND>) Expression2())?
+void Expression() : {} 
+{
+    Expression1()
+    (
+        <AND> Expression() |
+        <OPEN_BRACKET> Expression() <CLOSE_BRACKET> |
+        <DOT> 
+        (
+            <LENGTH> |
+            <IDENTIFIER> <OPEN_PARENTHESES> (Expression() (<VIRG> Expression())*)? <CLOSE_PARENTHESES>
+        )
+    )?
 }
 
-void Expression2() #void: {} {
-    Expression3() ((<SUM> | <SUB>) Expression3())?
+void Expression1() #void : {} 
+{
+    Expression2() (<LESS> Expression2())*
 }
 
-void Expression3() #void: {} {
-    Term() ((<MULT> | <DIV>) Term())?
+void Expression2() #void : {} 
+{
+    Expression3() ((<SUM> | <SUB>) Expression3())*
+}
+
+void Expression3() #void : {} 
+{
+    Term() ((<MULT> | <DIV>) Term())*
 }
