@@ -159,15 +159,25 @@ void If() #void : {}
     }
 }
 
-void While() #void : {}
+void While() : {}
 {
     try {
-        <WHILE> <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES> Statement()
+        <WHILE> <OPEN_PARENTHESES> WhileCondition() <CLOSE_PARENTHESES> WhileBody() 
     }
     catch (ParseException e) {
         showError(e, "while error");
         System.exit(0);
     }
+}
+
+void WhileCondition() : {}
+{
+	Expression()	
+}
+
+void WhileBody() : {} 
+{
+	Statement()	
 }
 
 void Term() #void : {}
