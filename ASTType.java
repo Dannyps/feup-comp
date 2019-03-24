@@ -2,6 +2,15 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=false,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 public
 class ASTType extends SimpleNode {
+  /**
+   * @brief The Type name (e.g Int, Boolean, or User-defined types)
+   */
+  protected String dataType = ""; 
+  /**
+   * @brief Flag telling wether the this type is an array or not
+   */
+  protected Boolean isArray = false;
+
   public ASTType(int id) {
     super(id);
   }
@@ -9,6 +18,12 @@ class ASTType extends SimpleNode {
   public ASTType(Fac p, int id) {
     super(p, id);
   }
-
+  
+  /**
+   * @brief Returns the data type string
+   */
+  public String getDataType() {
+  	return this.dataType + (this.isArray ? "[]" : "");
+  }
 }
 /* JavaCC - OriginalChecksum=c5ea9ffbbbb56d16d70564d86ace4dac (do not edit this line) */

@@ -133,9 +133,10 @@ void FunctionBody() #void : {}
 
 void Type() : {Token type;}
 {
-    type=<BOOLEAN> | 
-    type=<INT> (<OPEN_BRACKET> <CLOSE_BRACKET>)? | 
-    type=<IDENTIFIER>
+    (type=<BOOLEAN> | 
+    type=<INT> (<OPEN_BRACKET> <CLOSE_BRACKET> {jjtThis.isArray=true;})? | 
+    type=<IDENTIFIER>)
+    {jjtThis.dataType = type.image;}
 }
 
 void Statement() : {}

@@ -331,6 +331,7 @@ if (jjtc000) {
         case OPEN_BRACKET:{
           jj_consume_token(OPEN_BRACKET);
           jj_consume_token(CLOSE_BRACKET);
+jjtn000.isArray=true;
           break;
           }
         default:
@@ -348,6 +349,9 @@ if (jjtc000) {
         jj_consume_token(-1);
         throw new ParseException();
       }
+jjtree.closeNodeScope(jjtn000, true);
+      jjtc000 = false;
+jjtn000.dataType = type.image;
     } finally {
 if (jjtc000) {
         jjtree.closeNodeScope(jjtn000, true);

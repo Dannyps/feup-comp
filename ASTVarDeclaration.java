@@ -13,7 +13,13 @@ class ASTVarDeclaration extends SimpleNode {
   }
 
   public String toString() {
-  	return super.toString() + ": " + this.identifier;
+    Node type = this.jjtGetChild(0);
+    if(type instanceof ASTType) {
+  	  return "Variable Declaration : " + ((ASTType)type).getDataType() + " " + this.identifier;
+    } else {
+      // TODO throw
+      return "error";
+    }
   }
 }
 /* JavaCC - OriginalChecksum=4f9d28789843add7285899d7229c7afa (do not edit this line) */
