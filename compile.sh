@@ -11,5 +11,8 @@ javacc $JJ_FILE || exit 2
 # Compile generated java code
 javac *.java || exit 3
 
+
 # Run syntax analyzer
+read -p "Press any key to continue..."
+clear
 java $SYNTAX_ANALYZER_FILE || exit 4
