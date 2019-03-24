@@ -63,6 +63,9 @@ class SimpleNode implements Node {
      out its children. */
 
   public void dump(String prefix) {
+    // Ignore ASTType nodes
+    if(this instanceof ASTType) return;
+    
     System.out.println(toString(prefix));
     if (children != null) {
       for (int i = 0; i < children.length; ++i) {

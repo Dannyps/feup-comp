@@ -2,6 +2,11 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=false,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 public
 class ASTMainDeclaration extends SimpleNode {
+  /**
+   * @brief The parameter's name for the array of arguments in main()
+   */
+  protected String param = "";
+ 
   public ASTMainDeclaration(int id) {
     super(id);
   }
@@ -9,6 +14,10 @@ class ASTMainDeclaration extends SimpleNode {
   public ASTMainDeclaration(Fac p, int id) {
     super(p, id);
   }
-
+  
+  @Override
+  public String toString() {
+    return "Main declaration (parameter: String[] " + this.param + " )";
+  }
 }
 /* JavaCC - OriginalChecksum=e91110d734329b1d3518e160eb3c27d8 (do not edit this line) */

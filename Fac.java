@@ -99,7 +99,7 @@ if (jjtc000) {
       label_2:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-        case CLASSVISIBILITY:{
+        case PUBLIC:{
           ;
           break;
           }
@@ -107,7 +107,7 @@ if (jjtc000) {
           jj_la1[2] = jj_gen;
           break label_2;
         }
-        jj_consume_token(CLASSVISIBILITY);
+        jj_consume_token(PUBLIC);
         switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
         case STATIC:{
           MainDeclaration();
@@ -180,9 +180,9 @@ if (jjtc000) {
   }
 
   static final public void MainDeclaration() throws ParseException {/*@bgen(jjtree) MainDeclaration */
-  ASTMainDeclaration jjtn000 = new ASTMainDeclaration(JJTMAINDECLARATION);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
+                          ASTMainDeclaration jjtn000 = new ASTMainDeclaration(JJTMAINDECLARATION);
+                          boolean jjtc000 = true;
+                          jjtree.openNodeScope(jjtn000);Token param;
     try {
       jj_consume_token(STATIC);
       jj_consume_token(VOID);
@@ -191,11 +191,14 @@ if (jjtc000) {
       jj_consume_token(STRING);
       jj_consume_token(OPEN_BRACKET);
       jj_consume_token(CLOSE_BRACKET);
-      jj_consume_token(IDENTIFIER);
+      param = jj_consume_token(IDENTIFIER);
       jj_consume_token(CLOSE_PARENTHESES);
       jj_consume_token(OPEN_CURLY_BRACKET);
       FunctionBody();
       jj_consume_token(CLOSE_CURLY_BRACKET);
+jjtree.closeNodeScope(jjtn000, true);
+      jjtc000 = false;
+jjtn000.param = param.image;
     } catch (Throwable jjte000) {
 if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -816,15 +819,6 @@ if (jjtc000) {
     finally { jj_save(0, xla); }
   }
 
-  static private boolean jj_3R_13()
- {
-    if (jj_scan_token(INT)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_14()) jj_scanpos = xsp;
-    return false;
-  }
-
   static private boolean jj_3R_12()
  {
     Token xsp;
@@ -839,6 +833,12 @@ if (jjtc000) {
     return false;
   }
 
+  static private boolean jj_3_1()
+ {
+    if (jj_3R_11()) return true;
+    return false;
+  }
+
   static private boolean jj_3R_11()
  {
     if (jj_3R_12()) return true;
@@ -846,15 +846,18 @@ if (jjtc000) {
     return false;
   }
 
-  static private boolean jj_3_1()
- {
-    if (jj_3R_11()) return true;
-    return false;
-  }
-
   static private boolean jj_3R_14()
  {
     if (jj_scan_token(OPEN_BRACKET)) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_13()
+ {
+    if (jj_scan_token(INT)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_14()) jj_scanpos = xsp;
     return false;
   }
 

@@ -17,7 +17,6 @@ class ASTVarDeclaration extends SimpleNode {
     if(type instanceof ASTType) {
   	  return "Variable Declaration : " + ((ASTType)type).getDataType() + " " + this.identifier;
     } else {
-      // TODO throw
       return "error";
     }
   }

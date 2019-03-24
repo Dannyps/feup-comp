@@ -45,7 +45,7 @@ TOKEN:
     < MAIN : "main" > |
     < STATIC : "static" > |
     < VOID : "void" > |
-    < CLASSVISIBILITY : "public" > |
+    < PUBLIC : "public" > |
     < CLASS : "class" > |
     < STRING : "String" > |
     < IF : "if" > |
@@ -95,7 +95,7 @@ void ClassDeclaration() : {}
     <CLASS> <IDENTIFIER> (<EXTENDS> <IDENTIFIER>)? <OPEN_CURLY_BRACKET>
     (
         (VarDeclaration())* 
-        (<CLASSVISIBILITY> (MainDeclaration() | MethodDeclaration()))*
+        (<PUBLIC> (MainDeclaration() | MethodDeclaration()))*
     )
     <CLOSE_CURLY_BRACKET>
 }
@@ -106,13 +106,14 @@ void VarDeclaration() : {Token ident;}
 	{jjtThis.identifier = ident.image;}
 }
 
-void MainDeclaration() : {}
+void MainDeclaration() : {Token param;}
 {
-    <STATIC> <VOID> <MAIN> <OPEN_PARENTHESES> <STRING> <OPEN_BRACKET><CLOSE_BRACKET> <IDENTIFIER> <CLOSE_PARENTHESES> <OPEN_CURLY_BRACKET>
+    <STATIC> <VOID> <MAIN> <OPEN_PARENTHESES> <STRING> <OPEN_BRACKET> <CLOSE_BRACKET> param=<IDENTIFIER> <CLOSE_PARENTHESES> <OPEN_CURLY_BRACKET>
     (
         FunctionBody()
     )
     <CLOSE_CURLY_BRACKET>
+    {jjtThis.param = param.image;}
 }
 
 void MethodDeclaration() : {}

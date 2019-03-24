@@ -15,7 +15,7 @@ public interface FacConstants {
   /** RegularExpression Id. */
   int VOID = 7;
   /** RegularExpression Id. */
-  int CLASSVISIBILITY = 8;
+  int PUBLIC = 8;
   /** RegularExpression Id. */
   int CLASS = 9;
   /** RegularExpression Id. */
