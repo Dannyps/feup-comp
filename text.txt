@@ -4,8 +4,11 @@ class MyClass {
     public static void main (String[] args) {
         int[] array;
     }
-
-    public int getX (boolean exist) {
+    
+    public int teste() {
+        return 1;    
+    }
+    public int getX (boolean exist, int yav) {
         int x;
         boolean y;
 

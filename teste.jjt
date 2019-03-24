@@ -110,26 +110,40 @@ void MainDeclaration() : {Token param;}
 {
     <STATIC> <VOID> <MAIN> <OPEN_PARENTHESES> <STRING> <OPEN_BRACKET> <CLOSE_BRACKET> param=<IDENTIFIER> <CLOSE_PARENTHESES> <OPEN_CURLY_BRACKET>
     (
-        FunctionBody()
+        MethodBody()
     )
     <CLOSE_CURLY_BRACKET>
     {jjtThis.param = param.image;}
 }
 
-void MethodDeclaration() : {}
+void MethodDeclaration() : {Token ident;}
 {
-    Type() <IDENTIFIER> <OPEN_PARENTHESES> (Type() <IDENTIFIER> (<VIRG> Type() <IDENTIFIER>)*)? <CLOSE_PARENTHESES> <OPEN_CURLY_BRACKET> 
+    Type() ident=<IDENTIFIER> 
+    <OPEN_PARENTHESES> (MethodParameter() (<VIRG> MethodParameter())*)? <CLOSE_PARENTHESES> 
+    <OPEN_CURLY_BRACKET> 
     (
-        FunctionBody()
-        <RETURN> Expression() <PVIRG>
+        MethodBody()
+        MethodReturn()
     )
     <CLOSE_CURLY_BRACKET>
+    {jjtThis.identifier=ident.image;}
 }
 
-void FunctionBody() #void : {}
+void MethodParameter() : {Token ident;}
+{
+    Type() ident=<IDENTIFIER> 
+    {jjtThis.identifier=ident.image;}
+}
+
+void MethodBody() : {}
 {
     (LOOKAHEAD(2) VarDeclaration())*
     (Statement())*
+}
+
+void MethodReturn() : {}
+{
+    <RETURN> Expression() <PVIRG>
 }
 
 void Type() : {Token type;}

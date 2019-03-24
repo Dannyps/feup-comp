@@ -6,13 +6,16 @@ public interface FacTreeConstants
   public int JJTVARDECLARATION = 2;
   public int JJTMAINDECLARATION = 3;
   public int JJTMETHODDECLARATION = 4;
-  public int JJTVOID = 5;
-  public int JJTTYPE = 6;
-  public int JJTSTATEMENT = 7;
-  public int JJTWHILE = 8;
-  public int JJTWHILECONDITION = 9;
-  public int JJTWHILEBODY = 10;
-  public int JJTEXPRESSION = 11;
+  public int JJTMETHODPARAMETER = 5;
+  public int JJTMETHODBODY = 6;
+  public int JJTMETHODRETURN = 7;
+  public int JJTTYPE = 8;
+  public int JJTSTATEMENT = 9;
+  public int JJTVOID = 10;
+  public int JJTWHILE = 11;
+  public int JJTWHILECONDITION = 12;
+  public int JJTWHILEBODY = 13;
+  public int JJTEXPRESSION = 14;
 
 
   public String[] jjtNodeName = {
@@ -21,13 +24,16 @@ public interface FacTreeConstants
     "VarDeclaration",
     "MainDeclaration",
     "MethodDeclaration",
-    "void",
+    "MethodParameter",
+    "MethodBody",
+    "MethodReturn",
     "Type",
     "Statement",
+    "void",
     "While",
     "WhileCondition",
     "WhileBody",
     "Expression",
   };
 }
-/* JavaCC - OriginalChecksum=c7bd52a9478c86def5b8abd8f39af381 (do not edit this line) */
+/* JavaCC - OriginalChecksum=04a9a5abbddabae6c64117089613c330 (do not edit this line) */
