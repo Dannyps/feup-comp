@@ -1,5 +1,6 @@
 options {
     LOOKAHEAD=1;
+	MULTI=true;
 }
 PARSER_BEGIN(Fac)
 import java.io.FileReader;
@@ -99,9 +100,10 @@ void ClassDeclaration() : {}
     <CLOSE_CURLY_BRACKET>
 }
 
-void VarDeclaration() : {}
+void VarDeclaration() : {Token ident;}
 {
-    Type() <IDENTIFIER> <PVIRG>
+	Type() ident=<IDENTIFIER> <PVIRG>
+	{jjtThis.identifier = ident.image;}
 }
 
 void MainDeclaration() : {}
@@ -129,11 +131,11 @@ void FunctionBody() #void : {}
     (Statement())*
 }
 
-void Type() #void: {}
+void Type() : {Token type;}
 {
-    <BOOLEAN> | 
-    <INT> (<OPEN_BRACKET> <CLOSE_BRACKET>)? | 
-    <IDENTIFIER>
+    type=<BOOLEAN> | 
+    type=<INT> (<OPEN_BRACKET> <CLOSE_BRACKET>)? | 
+    type=<IDENTIFIER>
 }
 
 void Statement() : {}

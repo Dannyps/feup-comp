@@ -155,6 +155,9 @@ if (jjtc000) {
       Type();
       ident = jj_consume_token(IDENTIFIER);
       jj_consume_token(PVIRG);
+jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+jjtn000.identifier = ident.image;
     } catch (Throwable jjte000) {
 if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
