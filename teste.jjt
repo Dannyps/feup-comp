@@ -82,6 +82,10 @@ TOKEN:
     < IDENTIFIER : ["a"-"z","A"-"Z","_","$"] (["a"-"z","A"-"Z","_","$","0"-"9"])* >
 }
 
+SPECIAL_TOKEN : {
+    <INLINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+}
+
 SimpleNode Program(): {}
 {
     ClassDeclaration() <EOF> 

@@ -84,6 +84,8 @@ public interface FacConstants {
   int INTEGERLITERAL = 41;
   /** RegularExpression Id. */
   int IDENTIFIER = 42;
+  /** RegularExpression Id. */
+  int INLINE_COMMENT = 43;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -133,6 +135,7 @@ public interface FacConstants {
     "\".\"",
     "<INTEGERLITERAL>",
     "<IDENTIFIER>",
+    "<INLINE_COMMENT>",
   };
 
 }

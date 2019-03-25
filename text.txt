@@ -1,4 +1,5 @@
-class MyClass {
+// this is a dummy comment
+class MyClass extends Exception { // yet another comment
     int x;
 
     public static void main (String[] args) {
@@ -9,6 +10,8 @@ class MyClass {
         return 1;    
     }
     public int getX (boolean exist, int yav) {
+        // inline comments can be anywhere
+        // parser should ignore this line int x;
         int x;
         boolean y;
 
