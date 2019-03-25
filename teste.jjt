@@ -1,6 +1,7 @@
 options {
     LOOKAHEAD=1;
-	MULTI=true;
+    MULTI=true;
+    ERROR_REPORTING=true;
 }
 PARSER_BEGIN(Fac)
 import java.io.FileReader;
@@ -32,6 +33,27 @@ public class Fac {
     }
 }
 PARSER_END(Fac)
+
+JAVACODE
+void error_skipto(int kind) {
+  ParseException e = generateParseException();  // generate the exception object.
+  System.out.println(e.toString());  // print the error message
+  Token t;
+  do {
+    t = getNextToken();
+  } while (t.kind != kind);
+    // The above loop consumes tokens all the way up to a token of
+    // "kind".  We use a do-while loop rather than a while because the
+    // current token is the one immediately before the erroneous token
+    // (in our case the token immediately before what should have been
+    // "if"/"while".
+}
+
+JAVACODE
+void printError(Token t, String expected){
+    System.out.println("[ERROR] text.txt:"+t.beginLine+":"+t.beginColumn+" Token `" +t+ "` was not recognized. Expected: `"+ expected +"`." );
+}
+
 
 SKIP :
 {
@@ -92,7 +114,8 @@ SimpleNode Program(): {}
             return jjtThis;
         }
     } catch (ParseException e) {
-        System.out.println("Expected class declaration");
+        System.out.println(e);
+        System.out.println("An error ocurred while compiling the program. Please fix the errors above and try again.");
         throw e;
     }
 
@@ -100,7 +123,14 @@ SimpleNode Program(): {}
 
 void ClassDeclaration() : {Token className, extendIdent;}
 {   
-    <CLASS> className=<IDENTIFIER> 
+    try {
+        <CLASS> className=<IDENTIFIER> 
+        {jjtThis.className=className.image;}
+    } catch (ParseException e) {
+        printError(getToken(1), "class");
+        throw e;
+    }
+
     (<EXTENDS> extendIdent=<IDENTIFIER> {jjtThis.extendsClassName = extendIdent.image;})? 
     <OPEN_CURLY_BRACKET>
     (
@@ -108,13 +138,14 @@ void ClassDeclaration() : {Token className, extendIdent;}
         (<PUBLIC> (MainDeclaration() | MethodDeclaration()))*
     )
     <CLOSE_CURLY_BRACKET>
-    {jjtThis.className=className.image;}
 
 }
 
 void VarDeclaration() : {Token ident;}
 {
 	Type() ident=<IDENTIFIER> <PVIRG>
+    // |
+    // error_skipto(PVIRG)
 	{jjtThis.identifier = ident.image;}
 }
 

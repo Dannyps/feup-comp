@@ -3,7 +3,7 @@
 
 /*Lorem ipsum*/
 
-class MyClass extends Exception { // yet another comment
+class MyClass extendds Exception { // yet another comment
     int x;
 
     public static void main (String[] args) {
