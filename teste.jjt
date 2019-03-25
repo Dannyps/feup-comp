@@ -7,9 +7,6 @@ import java.io.FileReader;
 import java.io.FileNotFoundException;
 
 public class Fac {
-    public int computeFac(SimpleNode node) {
-        return 0;
-    }
 
     public static void main(String[] args) throws ParseException {
 
@@ -20,14 +17,14 @@ public class Fac {
     
             root.dump("");
     
-            //System.out.println("Valor da expressão: "+fac.computeFac(root));
             System.exit(0);
             
         } catch (FileNotFoundException e) {
             System.exit(0);
             //TODO: handle exception
+        } catch (Exception e) {
+            System.exit(1);
         }
-        //Fac fac = new Fac(System.in);
     }
 
     public static void showError(ParseException e, String errorMessage) {
@@ -88,15 +85,21 @@ SPECIAL_TOKEN : {
 }
 
 SimpleNode Program(): {}
-{
-    ClassDeclaration() <EOF> 
-    {
-        return jjtThis;
+{   
+    try {
+        ClassDeclaration() <EOF>
+        {
+            return jjtThis;
+        }
+    } catch (ParseException e) {
+        System.out.println("Expected class declaration");
+        throw e;
     }
+
 }
 
 void ClassDeclaration() : {Token className, extendIdent;}
-{
+{   
     <CLASS> className=<IDENTIFIER> 
     (<EXTENDS> extendIdent=<IDENTIFIER> {jjtThis.extendsClassName = extendIdent.image;})? 
     <OPEN_CURLY_BRACKET>
@@ -106,6 +109,7 @@ void ClassDeclaration() : {Token className, extendIdent;}
     )
     <CLOSE_CURLY_BRACKET>
     {jjtThis.className=className.image;}
+
 }
 
 void VarDeclaration() : {Token ident;}

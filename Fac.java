@@ -4,10 +4,7 @@ import java.io.FileReader;
 import java.io.FileNotFoundException;
 
 public class Fac/*@bgen(jjtree)*/implements FacTreeConstants, FacConstants {/*@bgen(jjtree)*/
-  protected static JJTFacState jjtree = new JJTFacState();public int computeFac(SimpleNode node) {
-        return 0;
-    }
-
+  protected static JJTFacState jjtree = new JJTFacState();
     public static void main(String[] args) throws ParseException {
 
         try {
@@ -17,14 +14,14 @@ public class Fac/*@bgen(jjtree)*/implements FacTreeConstants, FacConstants {/*@b
 
             root.dump("");
 
-            //System.out.println("Valor da expressão: "+fac.computeFac(root));
             System.exit(0);
 
         } catch (FileNotFoundException e) {
             System.exit(0);
             //TODO: handle exception
+        } catch (Exception e) {
+            System.exit(1);
         }
-        //Fac fac = new Fac(System.in);
     }
 
     public static void showError(ParseException e, String errorMessage) {
@@ -36,11 +33,14 @@ public class Fac/*@bgen(jjtree)*/implements FacTreeConstants, FacConstants {/*@b
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
     try {
-      ClassDeclaration();
-      jj_consume_token(0);
-jjtree.closeNodeScope(jjtn000, true);
-      jjtc000 = false;
+      try {
+        ClassDeclaration();
+        jj_consume_token(0);
 {if ("" != null) return jjtn000;}
+      } catch (ParseException e) {
+System.out.println("Expected class declaration");
+        {if (true) throw e;}
+      }
     } catch (Throwable jjte000) {
 if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -905,20 +905,6 @@ if (jjtc000) {
     finally { jj_save(0, xla); }
   }
 
-  static private boolean jj_3R_12()
- {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(16)) {
-    jj_scanpos = xsp;
-    if (jj_3R_13()) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(42)) return true;
-    }
-    }
-    return false;
-  }
-
   static private boolean jj_3R_14()
  {
     if (jj_scan_token(OPEN_BRACKET)) return true;
@@ -944,6 +930,20 @@ if (jjtc000) {
   static private boolean jj_3_1()
  {
     if (jj_3R_11()) return true;
+    return false;
+  }
+
+  static private boolean jj_3R_12()
+ {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(16)) {
+    jj_scanpos = xsp;
+    if (jj_3R_13()) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(42)) return true;
+    }
+    }
     return false;
   }
 
