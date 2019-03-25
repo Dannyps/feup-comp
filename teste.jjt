@@ -90,14 +90,17 @@ SimpleNode Program(): {}
     }
 }
 
-void ClassDeclaration() : {}
+void ClassDeclaration() : {Token className, extendIdent;}
 {
-    <CLASS> <IDENTIFIER> (<EXTENDS> <IDENTIFIER>)? <OPEN_CURLY_BRACKET>
+    <CLASS> className=<IDENTIFIER> 
+    (<EXTENDS> extendIdent=<IDENTIFIER> {jjtThis.extendsClassName = extendIdent.image;})? 
+    <OPEN_CURLY_BRACKET>
     (
         (VarDeclaration())* 
         (<PUBLIC> (MainDeclaration() | MethodDeclaration()))*
     )
     <CLOSE_CURLY_BRACKET>
+    {jjtThis.className=className.image;}
 }
 
 void VarDeclaration() : {Token ident;}

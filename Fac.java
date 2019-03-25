@@ -64,16 +64,17 @@ if (jjtc000) {
   }
 
   static final public void ClassDeclaration() throws ParseException {/*@bgen(jjtree) ClassDeclaration */
-  ASTClassDeclaration jjtn000 = new ASTClassDeclaration(JJTCLASSDECLARATION);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
+                           ASTClassDeclaration jjtn000 = new ASTClassDeclaration(JJTCLASSDECLARATION);
+                           boolean jjtc000 = true;
+                           jjtree.openNodeScope(jjtn000);Token className, extendIdent;
     try {
       jj_consume_token(CLASS);
-      jj_consume_token(IDENTIFIER);
+      className = jj_consume_token(IDENTIFIER);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case EXTENDS:{
         jj_consume_token(EXTENDS);
-        jj_consume_token(IDENTIFIER);
+        extendIdent = jj_consume_token(IDENTIFIER);
+jjtn000.extendsClassName = extendIdent.image;
         break;
         }
       default:
@@ -126,6 +127,9 @@ if (jjtc000) {
         }
       }
       jj_consume_token(CLOSE_CURLY_BRACKET);
+jjtree.closeNodeScope(jjtn000, true);
+      jjtc000 = false;
+jjtn000.className=className.image;
     } catch (Throwable jjte000) {
 if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
