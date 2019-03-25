@@ -1,11 +1,17 @@
 // this is a dummy comment
+/*block*/
+
+/*Lorem ipsum*/
+
 class MyClass extends Exception { // yet another comment
     int x;
 
     public static void main (String[] args) {
         int[] array;
     }
-    
+    /*
+    dadsasd
+    */
     public int teste() {
         return 1;    
     }

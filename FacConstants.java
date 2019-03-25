@@ -86,6 +86,8 @@ public interface FacConstants {
   int IDENTIFIER = 42;
   /** RegularExpression Id. */
   int INLINE_COMMENT = 43;
+  /** RegularExpression Id. */
+  int BLOCK_COMMENT = 44;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -136,6 +138,7 @@ public interface FacConstants {
     "<INTEGERLITERAL>",
     "<IDENTIFIER>",
     "<INLINE_COMMENT>",
+    "<BLOCK_COMMENT>",
   };
 
 }

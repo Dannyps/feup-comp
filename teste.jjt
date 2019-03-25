@@ -79,11 +79,12 @@ TOKEN:
     < GREATER : ">" > |
     < DOT : "." > |
     < INTEGERLITERAL : (["0"-"9"])+ > |
-    < IDENTIFIER : ["a"-"z","A"-"Z","_","$"] (["a"-"z","A"-"Z","_","$","0"-"9"])* >
+    < IDENTIFIER : ["a"-"z","A"-"Z","_","$"] (["a"-"z","A"-"Z","_","$","0"-"9"])* > 
 }
 
 SPECIAL_TOKEN : {
-    <INLINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+    <INLINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")> |
+    <BLOCK_COMMENT: "/*" (~["*", "/"])* "*" "/">
 }
 
 SimpleNode Program(): {}
