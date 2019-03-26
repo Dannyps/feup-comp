@@ -9,6 +9,9 @@ class ASTIf extends SimpleNode {
   public ASTIf(Fac p, int id) {
     super(p, id);
   }
-
+  @Override
+  public String toString() {
+  	return "If";
+  }
 }
 /* JavaCC - OriginalChecksum=50601c13174f66c7985d7609d928a9a9 (do not edit this line) */

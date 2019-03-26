@@ -445,72 +445,93 @@ public class Fac/*@bgen(jjtree)*/implements FacTreeConstants, FacConstants {/*@b
   }
 
   static final public void Statement() throws ParseException {
-                    /*@bgen(jjtree) Statement */
-  ASTStatement jjtn000 = new ASTStatement(JJTSTATEMENT);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-    try {
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case OPEN_CURLY_BRACKET:
-        jj_consume_token(OPEN_CURLY_BRACKET);
-        label_6:
-        while (true) {
-          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          case IF:
-          case WHILE:
-          case OPEN_CURLY_BRACKET:
-          case OPEN_PARENTHESES:
-          case NEW:
-          case THIS:
-          case TRUE:
-          case FALSE:
-          case NOT:
-          case INTEGERLITERAL:
-          case IDENTIFIER:
-            ;
-            break;
-          default:
-            jj_la1[9] = jj_gen;
-            break label_6;
-          }
-          Statement();
-        }
-        jj_consume_token(CLOSE_CURLY_BRACKET);
-        break;
-      case IF:
-        If();
-        break;
-      case WHILE:
-        While();
-        break;
-      case OPEN_PARENTHESES:
-      case NEW:
-      case THIS:
-      case TRUE:
-      case FALSE:
-      case NOT:
-      case INTEGERLITERAL:
-      case IDENTIFIER:
-        Expression();
+                          Token t;
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case OPEN_CURLY_BRACKET:
+      jj_consume_token(OPEN_CURLY_BRACKET);
+      label_6:
+      while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case PVIRG:
-          jj_consume_token(PVIRG);
-          break;
-        case EQUAL:
-          jj_consume_token(EQUAL);
-          Expression();
-          jj_consume_token(PVIRG);
+        case IF:
+        case WHILE:
+        case OPEN_CURLY_BRACKET:
+        case OPEN_PARENTHESES:
+        case NEW:
+        case THIS:
+        case TRUE:
+        case FALSE:
+        case NOT:
+        case INTEGERLITERAL:
+        case IDENTIFIER:
+          ;
           break;
         default:
-          jj_la1[10] = jj_gen;
-          jj_consume_token(-1);
-          throw new ParseException();
+          jj_la1[9] = jj_gen;
+          break label_6;
+        }
+        Statement();
+      }
+      jj_consume_token(CLOSE_CURLY_BRACKET);
+      break;
+    case IF:
+      If();
+      break;
+    case WHILE:
+      While();
+      break;
+    case OPEN_PARENTHESES:
+    case NEW:
+    case THIS:
+    case TRUE:
+    case FALSE:
+    case NOT:
+    case INTEGERLITERAL:
+    case IDENTIFIER:
+      Expression();
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case PVIRG:
+        jj_consume_token(PVIRG);
+        break;
+      case EQUAL:
+        t = jj_consume_token(EQUAL);
+        Expression();
+                                 ASTEqual jjtn001 = new ASTEqual(JJTEQUAL);
+                                 boolean jjtc001 = true;
+                                 jjtree.openNodeScope(jjtn001);
+        try {
+          jj_consume_token(PVIRG);
+        } finally {
+                                 if (jjtc001) {
+                                   jjtree.closeNodeScope(jjtn001,  2);
+                                 }
         }
         break;
       default:
-        jj_la1[11] = jj_gen;
+        jj_la1[10] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
+      }
+      break;
+    default:
+      jj_la1[11] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+  static final public void If() throws ParseException {
+             /*@bgen(jjtree) If */
+  ASTIf jjtn000 = new ASTIf(JJTIF);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+    try {
+      try {
+        IfCondition();
+        IfBody();
+        ElseBody();
+      } catch (ParseException e) {
+        showError(e, "if error");
+        System.exit(0);
       }
     } catch (Throwable jjte000) {
       if (jjtc000) {
@@ -533,18 +554,106 @@ public class Fac/*@bgen(jjtree)*/implements FacTreeConstants, FacConstants {/*@b
     }
   }
 
-  static final public void If() throws ParseException {
+  static final public void IfCondition() throws ParseException {
+                      /*@bgen(jjtree) IfCondition */
+  ASTIfCondition jjtn000 = new ASTIfCondition(JJTIFCONDITION);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
     try {
-      jj_consume_token(IF);
-      jj_consume_token(OPEN_PARENTHESES);
-      Expression();
-      jj_consume_token(CLOSE_PARENTHESES);
-      Statement();
-      jj_consume_token(ELSE);
-      Statement();
-    } catch (ParseException e) {
+      try {
+        jj_consume_token(IF);
+        jj_consume_token(OPEN_PARENTHESES);
+        Expression();
+        jj_consume_token(CLOSE_PARENTHESES);
+      } catch (ParseException e) {
         showError(e, "if error");
         System.exit(0);
+      }
+    } catch (Throwable jjte000) {
+      if (jjtc000) {
+        jjtree.clearNodeScope(jjtn000);
+        jjtc000 = false;
+      } else {
+        jjtree.popNode();
+      }
+      if (jjte000 instanceof RuntimeException) {
+        {if (true) throw (RuntimeException)jjte000;}
+      }
+      if (jjte000 instanceof ParseException) {
+        {if (true) throw (ParseException)jjte000;}
+      }
+      {if (true) throw (Error)jjte000;}
+    } finally {
+      if (jjtc000) {
+        jjtree.closeNodeScope(jjtn000, true);
+      }
+    }
+  }
+
+  static final public void IfBody() throws ParseException {
+                 /*@bgen(jjtree) IfBody */
+  ASTIfBody jjtn000 = new ASTIfBody(JJTIFBODY);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+    try {
+      try {
+        Statement();
+      } catch (ParseException e) {
+        showError(e, "if error");
+        System.exit(0);
+      }
+    } catch (Throwable jjte000) {
+      if (jjtc000) {
+        jjtree.clearNodeScope(jjtn000);
+        jjtc000 = false;
+      } else {
+        jjtree.popNode();
+      }
+      if (jjte000 instanceof RuntimeException) {
+        {if (true) throw (RuntimeException)jjte000;}
+      }
+      if (jjte000 instanceof ParseException) {
+        {if (true) throw (ParseException)jjte000;}
+      }
+      {if (true) throw (Error)jjte000;}
+    } finally {
+      if (jjtc000) {
+        jjtree.closeNodeScope(jjtn000, true);
+      }
+    }
+  }
+
+  static final public void ElseBody() throws ParseException {
+                   /*@bgen(jjtree) ElseBody */
+  ASTElseBody jjtn000 = new ASTElseBody(JJTELSEBODY);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+    try {
+      try {
+        jj_consume_token(ELSE);
+        Statement();
+      } catch (ParseException e) {
+        showError(e, "if error");
+        System.exit(0);
+      }
+    } catch (Throwable jjte000) {
+      if (jjtc000) {
+        jjtree.clearNodeScope(jjtn000);
+        jjtc000 = false;
+      } else {
+        jjtree.popNode();
+      }
+      if (jjte000 instanceof RuntimeException) {
+        {if (true) throw (RuntimeException)jjte000;}
+      }
+      if (jjte000 instanceof ParseException) {
+        {if (true) throw (ParseException)jjte000;}
+      }
+      {if (true) throw (Error)jjte000;}
+    } finally {
+      if (jjtc000) {
+        jjtree.closeNodeScope(jjtn000, true);
+      }
     }
   }
 
@@ -642,25 +751,20 @@ public class Fac/*@bgen(jjtree)*/implements FacTreeConstants, FacConstants {/*@b
   }
 
   static final public void Expression() throws ParseException {
-                     /*@bgen(jjtree) Expression */
-  ASTExpression jjtn000 = new ASTExpression(JJTEXPRESSION);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-    try {
-      Expression1(1);
+    Expression1(1);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case OPEN_BRACKET:
+    case AND:
+    case DOT:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case OPEN_BRACKET:
       case AND:
-      case DOT:
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case AND:
-          jj_consume_token(AND);
+        jj_consume_token(AND);
                 ASTAnd jjtn001 = new ASTAnd(JJTAND);
                 boolean jjtc001 = true;
                 jjtree.openNodeScope(jjtn001);
-          try {
-            Expression();
-          } catch (Throwable jjte001) {
+        try {
+          Expression();
+        } catch (Throwable jjte001) {
                 if (jjtc001) {
                   jjtree.clearNodeScope(jjtn001);
                   jjtc001 = false;
@@ -674,90 +778,71 @@ public class Fac/*@bgen(jjtree)*/implements FacTreeConstants, FacConstants {/*@b
                   {if (true) throw (ParseException)jjte001;}
                 }
                 {if (true) throw (Error)jjte001;}
-          } finally {
+        } finally {
                 if (jjtc001) {
                   jjtree.closeNodeScope(jjtn001,  2);
                 }
-          }
+        }
+        break;
+      case OPEN_BRACKET:
+        jj_consume_token(OPEN_BRACKET);
+        Expression();
+        jj_consume_token(CLOSE_BRACKET);
+        break;
+      case DOT:
+        jj_consume_token(DOT);
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case LENGTH:
+          jj_consume_token(LENGTH);
           break;
-        case OPEN_BRACKET:
-          jj_consume_token(OPEN_BRACKET);
-          Expression();
-          jj_consume_token(CLOSE_BRACKET);
-          break;
-        case DOT:
-          jj_consume_token(DOT);
+        case IDENTIFIER:
+          jj_consume_token(IDENTIFIER);
+          jj_consume_token(OPEN_PARENTHESES);
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          case LENGTH:
-            jj_consume_token(LENGTH);
-            break;
+          case OPEN_PARENTHESES:
+          case NEW:
+          case THIS:
+          case TRUE:
+          case FALSE:
+          case NOT:
+          case INTEGERLITERAL:
           case IDENTIFIER:
-            jj_consume_token(IDENTIFIER);
-            jj_consume_token(OPEN_PARENTHESES);
-            switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-            case OPEN_PARENTHESES:
-            case NEW:
-            case THIS:
-            case TRUE:
-            case FALSE:
-            case NOT:
-            case INTEGERLITERAL:
-            case IDENTIFIER:
-              Expression();
-              label_7:
-              while (true) {
-                switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-                case VIRG:
-                  ;
-                  break;
-                default:
-                  jj_la1[12] = jj_gen;
-                  break label_7;
-                }
-                jj_consume_token(VIRG);
-                Expression();
+            Expression();
+            label_7:
+            while (true) {
+              switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+              case VIRG:
+                ;
+                break;
+              default:
+                jj_la1[12] = jj_gen;
+                break label_7;
               }
-              break;
-            default:
-              jj_la1[13] = jj_gen;
-              ;
+              jj_consume_token(VIRG);
+              Expression();
             }
-            jj_consume_token(CLOSE_PARENTHESES);
             break;
           default:
-            jj_la1[14] = jj_gen;
-            jj_consume_token(-1);
-            throw new ParseException();
+            jj_la1[13] = jj_gen;
+            ;
           }
+          jj_consume_token(CLOSE_PARENTHESES);
           break;
         default:
-          jj_la1[15] = jj_gen;
+          jj_la1[14] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
         break;
       default:
-        jj_la1[16] = jj_gen;
-        ;
+        jj_la1[15] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
       }
-    } catch (Throwable jjte000) {
-      if (jjtc000) {
-        jjtree.clearNodeScope(jjtn000);
-        jjtc000 = false;
-      } else {
-        jjtree.popNode();
-      }
-      if (jjte000 instanceof RuntimeException) {
-        {if (true) throw (RuntimeException)jjte000;}
-      }
-      if (jjte000 instanceof ParseException) {
-        {if (true) throw (ParseException)jjte000;}
-      }
-      {if (true) throw (Error)jjte000;}
-    } finally {
-      if (jjtc000) {
-        jjtree.closeNodeScope(jjtn000, true);
-      }
+      break;
+    default:
+      jj_la1[16] = jj_gen;
+      ;
     }
   }
 
@@ -960,9 +1045,15 @@ public class Fac/*@bgen(jjtree)*/implements FacTreeConstants, FacConstants {/*@b
         break;
       case TRUE:
         t = jj_consume_token(TRUE);
+               jjtree.closeNodeScope(jjtn000, true);
+               jjtc000 = false;
+              jjtn000.str = t.image;
         break;
       case FALSE:
         t = jj_consume_token(FALSE);
+                jjtree.closeNodeScope(jjtn000, true);
+                jjtc000 = false;
+               jjtn000.str = t.image;
         break;
       case IDENTIFIER:
         t = jj_consume_token(IDENTIFIER);
@@ -972,6 +1063,9 @@ public class Fac/*@bgen(jjtree)*/implements FacTreeConstants, FacConstants {/*@b
         break;
       case THIS:
         t = jj_consume_token(THIS);
+               jjtree.closeNodeScope(jjtn000, true);
+               jjtc000 = false;
+              jjtn000.str = t.image;
         break;
       case NEW:
         jj_consume_token(NEW);
@@ -994,8 +1088,11 @@ public class Fac/*@bgen(jjtree)*/implements FacTreeConstants, FacConstants {/*@b
         }
         break;
       case NOT:
-        jj_consume_token(NOT);
+        t = jj_consume_token(NOT);
         Term(1);
+                      jjtree.closeNodeScope(jjtn000, true);
+                      jjtc000 = false;
+                     jjtn000.str = t.image;
         break;
       case OPEN_PARENTHESES:
         jj_consume_token(OPEN_PARENTHESES);

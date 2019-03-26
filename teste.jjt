@@ -162,7 +162,7 @@ void Type() : {Token type;}
     {jjtThis.dataType = type.image;}
 }
 
-void Statement() : {}
+void Statement() #void : {Token t;}
 {
     <OPEN_CURLY_BRACKET> (Statement())* <CLOSE_CURLY_BRACKET> |
     If() |
@@ -170,14 +170,48 @@ void Statement() : {}
     Expression()
     (
         <PVIRG> |
-        <EQUAL> Expression() <PVIRG>
+        t=<EQUAL> Expression() <PVIRG> #Equal(2) //{jjtThis.str = t.image;}
     )
 }
 
-void If() #void : {}
+void If() : {}
 {
     try {
-        <IF> <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES> Statement() <ELSE> Statement()
+        IfCondition() IfBody() ElseBody()
+        //<IF> <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES> Statement() <ELSE> Statement()
+    }
+    catch (ParseException e) {
+        showError(e, "if error");
+        System.exit(0);
+    }
+}
+
+void IfCondition() : {}
+{
+    try {
+        <IF> <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES>
+    }
+    catch (ParseException e) {
+        showError(e, "if error");
+        System.exit(0);
+    }
+}
+
+void IfBody() : {}
+{
+    try {
+        Statement()
+    }
+    catch (ParseException e) {
+        showError(e, "if error");
+        System.exit(0);
+    }
+}
+
+void ElseBody() : {}
+{
+    try {
+        <ELSE> Statement()
     }
     catch (ParseException e) {
         showError(e, "if error");
@@ -206,7 +240,7 @@ void WhileBody() : {}
 	Statement()	
 }
 
-void Expression() : {} 
+void Expression() #void : {} 
 {
     Expression1(1)
     (
@@ -246,16 +280,16 @@ void Expression3(int sign) #void : {}
 void Term(int sign) : {Token t;}
 {
     t=<INTEGERLITERAL> {jjtThis.val = sign * Integer.parseInt(t.image);} |
-    t=<TRUE> |
-    t=<FALSE> |
+    t=<TRUE> {jjtThis.str = t.image;}|
+    t=<FALSE> {jjtThis.str = t.image;}|
     t=<IDENTIFIER> {jjtThis.str = t.image;}|
-    t=<THIS> |
+    t=<THIS> {jjtThis.str = t.image;}|
     <NEW>
     (
         <INT> <OPEN_BRACKET> Expression() <CLOSE_BRACKET> | 
         <IDENTIFIER> <OPEN_PARENTHESES> <CLOSE_PARENTHESES>
     ) |
-    <NOT> Term(1) |
+    t=<NOT> Term(1) {jjtThis.str = t.image;}|
     <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES>
 }
 

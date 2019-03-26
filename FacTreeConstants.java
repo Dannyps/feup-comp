@@ -10,19 +10,22 @@ public interface FacTreeConstants
   public int JJTMETHODBODY = 6;
   public int JJTMETHODRETURN = 7;
   public int JJTTYPE = 8;
-  public int JJTSTATEMENT = 9;
-  public int JJTVOID = 10;
-  public int JJTWHILE = 11;
-  public int JJTWHILECONDITION = 12;
-  public int JJTWHILEBODY = 13;
-  public int JJTEXPRESSION = 14;
-  public int JJTAND = 15;
-  public int JJTLESS = 16;
-  public int JJTADD = 17;
-  public int JJTSUB = 18;
-  public int JJTMULT = 19;
-  public int JJTDIV = 20;
-  public int JJTTERM = 21;
+  public int JJTVOID = 9;
+  public int JJTEQUAL = 10;
+  public int JJTIF = 11;
+  public int JJTIFCONDITION = 12;
+  public int JJTIFBODY = 13;
+  public int JJTELSEBODY = 14;
+  public int JJTWHILE = 15;
+  public int JJTWHILECONDITION = 16;
+  public int JJTWHILEBODY = 17;
+  public int JJTAND = 18;
+  public int JJTLESS = 19;
+  public int JJTADD = 20;
+  public int JJTSUB = 21;
+  public int JJTMULT = 22;
+  public int JJTDIV = 23;
+  public int JJTTERM = 24;
 
 
   public String[] jjtNodeName = {
@@ -35,12 +38,15 @@ public interface FacTreeConstants
     "MethodBody",
     "MethodReturn",
     "Type",
-    "Statement",
     "void",
+    "Equal",
+    "If",
+    "IfCondition",
+    "IfBody",
+    "ElseBody",
     "While",
     "WhileCondition",
     "WhileBody",
-    "Expression",
     "And",
     "Less",
     "Add",
@@ -50,4 +56,4 @@ public interface FacTreeConstants
     "Term",
   };
 }
-/* JavaCC - OriginalChecksum=cd3a57e55ab7c109057af972713c5519 (do not edit this line) */
+/* JavaCC - OriginalChecksum=fe17b22314306e97f908ff8f22d1f51f (do not edit this line) */
