@@ -31,7 +31,7 @@ class MyClass extends Exception { // yet another comment
 
         }
 
-        while(y < 100 && !y) {
+        while(y < 100 && 5f!==4f) {
             x = x - 1;
             if(y < 50) {
                 y = true;
