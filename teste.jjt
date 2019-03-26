@@ -206,27 +206,11 @@ void WhileBody() : {}
 	Statement()	
 }
 
-void Term() #void : {}
-{
-    <INTEGERLITERAL> |
-    <TRUE> |
-    <FALSE> |
-    <IDENTIFIER> |
-    <THIS> |
-    <NEW>
-    (
-        <INT> <OPEN_BRACKET> Expression() <CLOSE_BRACKET> | 
-        <IDENTIFIER> <OPEN_PARENTHESES> <CLOSE_PARENTHESES>
-    ) |
-    <NOT> Term() |
-    <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES>
-}
-
 void Expression() : {} 
 {
-    Expression1()
+    Expression1(1)
     (
-        <AND> Expression() |
+        <AND> Expression() #And(2) |
         <OPEN_BRACKET> Expression() <CLOSE_BRACKET> |
         <DOT> 
         (
@@ -236,17 +220,42 @@ void Expression() : {}
     )?
 }
 
-void Expression1() #void : {} 
+void Expression1(int sign) #void : {} 
 {
-    Expression2() (<LESS> Expression2())*
+    Expression2(sign) (<LESS> Expression2(1) #Less(2))*
 }
 
-void Expression2() #void : {} 
+void Expression2(int sign) #void : {} 
 {
-    Expression3() ((<SUM> | <SUB>) Expression3())*
+    Expression3(sign) 
+    [
+        <SUM> Expression3(1) #Add(2) | 
+        <SUB> Expression3(1) #Sub(2)
+    ]
 }
 
-void Expression3() #void : {} 
+void Expression3(int sign) #void : {} 
 {
-    Term() ((<MULT> | <DIV>) Term())*
+    Term(sign) 
+    [
+        <MULT> Expression3(1) #Mult(2) | 
+        <DIV> Expression3(1) #Div(2)
+    ]
 }
+
+void Term(int sign) : {Token t;}
+{
+    t=<INTEGERLITERAL> {jjtThis.val = sign * Integer.parseInt(t.image);} |
+    t=<TRUE> |
+    t=<FALSE> |
+    t=<IDENTIFIER> {jjtThis.str = t.image;}|
+    t=<THIS> |
+    <NEW>
+    (
+        <INT> <OPEN_BRACKET> Expression() <CLOSE_BRACKET> | 
+        <IDENTIFIER> <OPEN_PARENTHESES> <CLOSE_PARENTHESES>
+    ) |
+    <NOT> Term(1) |
+    <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES>
+}
+

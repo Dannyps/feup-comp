@@ -8,6 +8,7 @@ class MyClass extends Exception { // yet another comment
 
     public static void main (String[] args) {
         int[] array;
+        array[0] = 1;
     }
     /*
     dadsasd

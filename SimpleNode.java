@@ -8,6 +8,12 @@ class SimpleNode implements Node {
   protected Object value;
   protected Fac parser;
 
+  // added
+  public String str;
+  public Integer val;
+  public int Op = 0;
+  
+
   public SimpleNode(int i) {
     id = i;
   }
@@ -66,7 +72,21 @@ class SimpleNode implements Node {
     // Ignore ASTType nodes
     if(this instanceof ASTType) return;
     
-    System.out.println(toString(prefix));
+    if(!(this instanceof ASTTerm)){
+      System.out.println(toString(prefix));
+    }
+
+
+    if(this.Op != 0) {
+      System.out.println(prefix+MyConstants.ops[this.Op-1]);
+    }
+    if(children == null && this.val != null) {
+      System.out.println(prefix+this.val);
+    } else if(this.str != null) {
+      System.out.println(prefix+this.str);
+    }
+
+
     if (children != null) {
       for (int i = 0; i < children.length; ++i) {
         SimpleNode n = (SimpleNode)children[i];
