@@ -131,27 +131,43 @@ void ClassDeclaration() : {Token className, extendIdent;}
         throw e;
     }
 
-    (<EXTENDS> extendIdent=<IDENTIFIER> {jjtThis.extendsClassName = extendIdent.image;})? 
-    <OPEN_CURLY_BRACKET>
-    (
-        (VarDeclaration())* 
-        (<PUBLIC> (MainDeclaration() | MethodDeclaration()))*
-    )
-    <CLOSE_CURLY_BRACKET>
+    try {
+        (<EXTENDS> extendIdent=<IDENTIFIER> {jjtThis.extendsClassName = extendIdent.image;})? 
+        {jjtThis.className=className.image;}
+        try{
+            <OPEN_CURLY_BRACKET>
+            (
+                (VarDeclaration())* 
+                (<PUBLIC> (MainDeclaration() | MethodDeclaration()))*
+            )
+            <CLOSE_CURLY_BRACKET>
+        } catch (ParseException e) {
+            printError(getToken(1), "{ classBody }");
+            throw e;
+        }
+    } catch (ParseException e) {
+        printError(getToken(1), "extends className");
+        throw e;
+    }
 
 }
 
 void VarDeclaration() : {Token ident;}
 {
 	Type() ident=<IDENTIFIER> <PVIRG>
-    // |
-    // error_skipto(PVIRG)
 	{jjtThis.identifier = ident.image;}
 }
 
 void MainDeclaration() : {Token param;}
 {
-    <STATIC> <VOID> <MAIN> <OPEN_PARENTHESES> <STRING> <OPEN_BRACKET> <CLOSE_BRACKET> param=<IDENTIFIER> <CLOSE_PARENTHESES> <OPEN_CURLY_BRACKET>
+    try {
+        {System.out.println("vive");}
+        (<STATIC> <VOID> <MAIN> <OPEN_PARENTHESES> <STRING> <OPEN_BRACKET> <CLOSE_BRACKET> param=<IDENTIFIER> <CLOSE_PARENTHESES> <OPEN_CURLY_BRACKET>)
+    } catch (ParseException e) {
+        System.out.println("MORREU");
+        printError(getToken(1), "static void main(String[] args) {");
+        throw e;
+    }
     (
         MethodBody()
     )

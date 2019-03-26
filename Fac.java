@@ -109,58 +109,69 @@ try {ParseException e = generateParseException();  // generate the exception obj
         printError(getToken(1), "class");
         {if (true) throw e;}
       }
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case EXTENDS:
-        jj_consume_token(EXTENDS);
-        extendIdent = jj_consume_token(IDENTIFIER);
-                                         jjtn000.extendsClassName = extendIdent.image;
-        break;
-      default:
-        jj_la1[0] = jj_gen;
-        ;
-      }
-      jj_consume_token(OPEN_CURLY_BRACKET);
-      label_1:
-      while (true) {
+      try {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case INT:
-        case BOOLEAN:
-        case IDENTIFIER:
+        case EXTENDS:
+          jj_consume_token(EXTENDS);
+          extendIdent = jj_consume_token(IDENTIFIER);
+                                             jjtn000.extendsClassName = extendIdent.image;
+          break;
+        default:
+          jj_la1[0] = jj_gen;
           ;
-          break;
-        default:
-          jj_la1[1] = jj_gen;
-          break label_1;
         }
-        VarDeclaration();
+         jjtn000.className=className.image;
+        try {
+          jj_consume_token(OPEN_CURLY_BRACKET);
+          label_1:
+          while (true) {
+            switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+            case INT:
+            case BOOLEAN:
+            case IDENTIFIER:
+              ;
+              break;
+            default:
+              jj_la1[1] = jj_gen;
+              break label_1;
+            }
+            VarDeclaration();
+          }
+          label_2:
+          while (true) {
+            switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+            case PUBLIC:
+              ;
+              break;
+            default:
+              jj_la1[2] = jj_gen;
+              break label_2;
+            }
+            jj_consume_token(PUBLIC);
+            switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+            case STATIC:
+              MainDeclaration();
+              break;
+            case INT:
+            case BOOLEAN:
+            case IDENTIFIER:
+              MethodDeclaration();
+              break;
+            default:
+              jj_la1[3] = jj_gen;
+              jj_consume_token(-1);
+              throw new ParseException();
+            }
+          }
+          jj_consume_token(CLOSE_CURLY_BRACKET);
+        } catch (ParseException e) {
+            printError(getToken(1), "{ classBody }");
+            {if (true) throw e;}
+        }
+      } catch (ParseException e) {
+        printError(getToken(1), "extends className");
+        {if (true) throw e;}
       }
-      label_2:
-      while (true) {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case PUBLIC:
-          ;
-          break;
-        default:
-          jj_la1[2] = jj_gen;
-          break label_2;
-        }
-        jj_consume_token(PUBLIC);
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case STATIC:
-          MainDeclaration();
-          break;
-        case INT:
-        case BOOLEAN:
-        case IDENTIFIER:
-          MethodDeclaration();
-          break;
-        default:
-          jj_la1[3] = jj_gen;
-          jj_consume_token(-1);
-          throw new ParseException();
-        }
-      }
-      jj_consume_token(CLOSE_CURLY_BRACKET);
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -221,16 +232,23 @@ try {ParseException e = generateParseException();  // generate the exception obj
                           boolean jjtc000 = true;
                           jjtree.openNodeScope(jjtn000);Token param;
     try {
-      jj_consume_token(STATIC);
-      jj_consume_token(VOID);
-      jj_consume_token(MAIN);
-      jj_consume_token(OPEN_PARENTHESES);
-      jj_consume_token(STRING);
-      jj_consume_token(OPEN_BRACKET);
-      jj_consume_token(CLOSE_BRACKET);
-      param = jj_consume_token(IDENTIFIER);
-      jj_consume_token(CLOSE_PARENTHESES);
-      jj_consume_token(OPEN_CURLY_BRACKET);
+      try {
+         System.out.println("vive");
+        jj_consume_token(STATIC);
+        jj_consume_token(VOID);
+        jj_consume_token(MAIN);
+        jj_consume_token(OPEN_PARENTHESES);
+        jj_consume_token(STRING);
+        jj_consume_token(OPEN_BRACKET);
+        jj_consume_token(CLOSE_BRACKET);
+        param = jj_consume_token(IDENTIFIER);
+        jj_consume_token(CLOSE_PARENTHESES);
+        jj_consume_token(OPEN_CURLY_BRACKET);
+      } catch (ParseException e) {
+        System.out.println("MORREU");
+        printError(getToken(1), "static void main(String[] args) {");
+        {if (true) throw e;}
+      }
       MethodBody();
       jj_consume_token(CLOSE_CURLY_BRACKET);
       jjtree.closeNodeScope(jjtn000, true);

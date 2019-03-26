@@ -3,10 +3,10 @@
 
 /*Lorem ipsum*/
 
-class MyClass extendds Exception { // yet another comment
+class MyClass extends Exception { // yet another comment
     int x;
 
-    public static void main (String[] args) {
+    public static void main d(String[] args) {
         int[] array;
     }
     /*
