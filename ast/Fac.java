@@ -11,7 +11,7 @@ public class Fac/*@bgen(jjtree)*/implements FacTreeConstants, FacConstants {/*@b
     public static void main(String[] args) throws ParseException {
 
         try {
-            FileReader fileReader = new FileReader("text.txt");
+            FileReader fileReader = new FileReader("../text.txt");
             Fac fac = new Fac(fileReader);
             SimpleNode root = fac.Program();
 

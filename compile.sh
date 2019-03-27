@@ -6,13 +6,14 @@ SYNTAX_ANALYZER_FILE="Fac"
 jjtree $JJT_FILE || exit 1
 
 # Generate java code
-javacc $JJ_FILE || exit 2
+cd ast
+javacc $JJ_FILE || read 
 
 # Compile generated java code
-javac *.java || exit 3
+javac *.java || read
 
 
 # Run syntax analyzer
 read -p "Press any key to continue..."
 clear
-java $SYNTAX_ANALYZER_FILE || exit 4
+java $SYNTAX_ANALYZER_FILE || read
