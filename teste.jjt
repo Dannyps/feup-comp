@@ -109,7 +109,7 @@ SPECIAL_TOKEN : {
 
 SimpleNode Program(): {}
 {
-    ClassDeclaration() <EOF> 
+    (ClassDeclaration())+ <EOF> 
     {
         return jjtThis;
     }
