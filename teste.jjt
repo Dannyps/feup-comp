@@ -98,7 +98,10 @@ TOKEN:
     < LESS : "<" > |
     < GREATER : ">" > |
     < DOT : "." > |
-    < INTEGERLITERAL : (["0"-"9"])+ > |
+    < OCTAL_NUMBER : ("0")(["0"-"7"])+ > |
+    < HEX_NUMBER : ("0")("x"|"X")(["0"-"9", "a"-"f", "A"-"F"])+ > |
+    < BINARY_NUMBER : ("0")("b"|"B")("0"|"1")+ > |
+    < INTEGERLITERAL: ("-"|"+")?(["0"-"9"])+ > |
     < IDENTIFIER : ["a"-"z","A"-"Z","_","$"] (["a"-"z","A"-"Z","_","$","0"-"9"])* > 
 }
 
@@ -300,7 +303,9 @@ void Expression3(int sign) #void : {}
 
 void Term(int sign) : {Token t;}
 {
-    t=<INTEGERLITERAL> {jjtThis.val = sign * Integer.parseInt(t.image);} |
+    (t=<INTEGERLITERAL> | t=<OCTAL_NUMBER> | t=<HEX_NUMBER> | t=<BINARY_NUMBER>)
+    //{jjtThis.val = sign * Integer.parseInt(t.image);} |
+    {jjtThis.str = t.image;} | 
     t=<TRUE> {jjtThis.str = t.image;}|
     t=<FALSE> {jjtThis.str = t.image;}|
     t=<IDENTIFIER> {jjtThis.str = t.image;}|

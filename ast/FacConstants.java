@@ -81,13 +81,19 @@ public interface FacConstants {
   /** RegularExpression Id. */
   int DOT = 40;
   /** RegularExpression Id. */
-  int INTEGERLITERAL = 41;
+  int OCTAL_NUMBER = 41;
   /** RegularExpression Id. */
-  int IDENTIFIER = 42;
+  int HEX_NUMBER = 42;
   /** RegularExpression Id. */
-  int INLINE_COMMENT = 43;
+  int BINARY_NUMBER = 43;
   /** RegularExpression Id. */
-  int BLOCK_COMMENT = 44;
+  int INTEGERLITERAL = 44;
+  /** RegularExpression Id. */
+  int IDENTIFIER = 45;
+  /** RegularExpression Id. */
+  int INLINE_COMMENT = 46;
+  /** RegularExpression Id. */
+  int BLOCK_COMMENT = 47;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -135,6 +141,9 @@ public interface FacConstants {
     "\"<\"",
     "\">\"",
     "\".\"",
+    "<OCTAL_NUMBER>",
+    "<HEX_NUMBER>",
+    "<BINARY_NUMBER>",
     "<INTEGERLITERAL>",
     "<IDENTIFIER>",
     "<INLINE_COMMENT>",

@@ -1,0 +1,24 @@
+class IntegerLiterals {
+	int num;
+	
+	public int foo() {
+		/* one digit */
+		num = 0;
+		/* multiple digits */
+		num = 1234;
+		/* signed digits */
+		num = -1234;
+		num = +1234;
+		/* octal numbers */
+		num = 077;
+		num = 01;
+		num = 0001;
+		/* hexadecimal numbers */
+		num = 0xAF01E;
+		num = 0X12345fF;
+		/* binary numbers */
+		num = 0b1010;
+		num = 0B11;
+		return 0;
+	}
+}
