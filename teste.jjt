@@ -15,7 +15,7 @@ public class Fac {
     public static void main(String[] args) throws ParseException {
         /** Validate arguments */
         if(args.length != 1) {
-          System.out.println("Usage: " + args[0] + " <filename.jjt>");
+          System.out.println("Usage: " + args[0] + " <filename.jmm>");
           System.exit(1);
         }
         /** Open file */
