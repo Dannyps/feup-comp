@@ -9,22 +9,25 @@ public class Fac/*@bgen(jjtree)*/implements FacTreeConstants, FacConstants {/*@b
     }
 
     public static void main(String[] args) throws ParseException {
-
+        /** Validate arguments */
+        if(args.length != 1) {
+          System.out.println("Usage: " + args[0] + " <filename.jjt>");
+          System.exit(1);
+        }
+        /** Open file */
         try {
-            FileReader fileReader = new FileReader("../text.txt");
+            FileReader fileReader = new FileReader(args[0]);
             Fac fac = new Fac(fileReader);
             SimpleNode root = fac.Program();
 
             root.dump("");
 
-            //System.out.println("Valor da expressão: "+fac.computeFac(root));
             System.exit(0);
 
         } catch (FileNotFoundException e) {
-            System.exit(0);
-            //TODO: handle exception
+            System.out.println("Failed to open file " + args[0]);
+            System.exit(1);
         }
-        //Fac fac = new Fac(System.in);
     }
 
     public static void showError(ParseException e, String errorMessage) {
