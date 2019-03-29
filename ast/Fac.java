@@ -8,12 +8,15 @@ public class Fac/*@bgen(jjtree)*/implements FacTreeConstants, FacConstants {/*@b
         return 0;
     }
 
+    public static String fname;
+
     public static void main(String[] args) throws ParseException {
         /** Validate arguments */
         if(args.length != 1) {
           System.out.println("Usage: " + args[0] + " <filename.jmm>");
           System.exit(1);
         }
+        fname = args[0];
         /** Open file */
         try {
             FileReader fileReader = new FileReader(args[0]);
@@ -34,7 +37,28 @@ public class Fac/*@bgen(jjtree)*/implements FacTreeConstants, FacConstants {/*@b
         System.out.println(errorMessage);
     }
 
-  static void error_skipto(int kind) throws ParseException {/*@bgen(jjtree) error_skipto */
+  static boolean contains(final int[] array, final int v) throws ParseException {/*@bgen(jjtree) contains */
+ ASTcontains jjtn000 = new ASTcontains(JJTCONTAINS);
+ boolean jjtc000 = true;
+ jjtree.openNodeScope(jjtn000);
+ try {boolean result = false;
+
+    for(int i : array){
+        if(i == v){
+            result = true;
+            break;
+        }
+    }
+
+    return result;/*@bgen(jjtree)*/
+ } finally {
+   if (jjtc000) {
+     jjtree.closeNodeScope(jjtn000, true);
+   }
+ }
+  }
+
+  static void error_skipto(int[] kinds) throws ParseException {/*@bgen(jjtree) error_skipto */
 ASTerror_skipto jjtn000 = new ASTerror_skipto(JJTERROR_SKIPTO);
 boolean jjtc000 = true;
 jjtree.openNodeScope(jjtn000);
@@ -44,7 +68,7 @@ try {ParseException e = generateParseException();  // generate the exception obj
   do {
     t = getNextToken();
     System.out.println(t);
-  } while (t.kind != kind);/*@bgen(jjtree)*/
+  } while (!contains(kinds, t.kind));/*@bgen(jjtree)*/
 } finally {
   if (jjtc000) {
     jjtree.closeNodeScope(jjtn000, true);
@@ -722,10 +746,25 @@ if (jjtc000) {
         jj_consume_token(CLOSE_PARENTHESES);
         WhileBody();
       } catch (ParseException e) {
-error_skipto(CLOSE_PARENTHESES);
-        showError(e, "while error");
-        //System.exit(0);
+int i = 1;
+        Token t, ft = getToken(i);
+        do {
+            t = getToken(i++);
+            // System.out.print(tokenImage[t.kind]);
+            // System.out.print(" => ");
+            // System.out.println(t.image);
+        } while (!contains(new int[]{OPEN_CURLY_BRACKET}, t.kind));
+        for(;i>2;i--){
+            Token t1 = getNextToken();
+            // read all tokens until OPEN_CURLY_BRACKET
+        }
 
+        // report error on while condition
+        System.out.println("[ERROR] "+Fac.fname+":"+ft.beginLine+":"+ft.beginColumn+" Token `" +ft+ "` was not recognized");
+
+        // proceed to while body
+        WhileBody();
+        {if ("" != null) return;}
       }
     } catch (Throwable jjte000) {
 if (jjtc000) {
