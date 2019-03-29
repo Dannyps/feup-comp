@@ -1,0 +1,21 @@
+// comments are extremely useful
+
+/*
+	There two types of comments
+	 Blocks
+	 Inline
+*/
+class comments {
+	/*
+		I can document class methods
+	*/
+	public boolean foo() { // yet another inline comment
+		return true; /* register EAX = 1 */	
+	}
+}
+
+/* does it work here ? */
+
+/* does it support * and / inside the block ???? */
+
+// it doesn't, but it will
