@@ -9,10 +9,5 @@ class ASTTerm extends SimpleNode {
   public ASTTerm(Fac p, int id) {
     super(p, id);
   }
-
-  @Override
-  public String toString() {
-  	return "";
-  }
 }
 /* JavaCC - OriginalChecksum=6f384f9dc4d849455491b9432dbabf6e (do not edit this line) */

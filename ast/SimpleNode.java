@@ -72,7 +72,7 @@ class SimpleNode implements Node {
     // Ignore ASTType nodes
     if(this instanceof ASTType) return;
     
-    if(!(this instanceof ASTTerm)){
+    if(!(this instanceof ASTTerm) && !(this instanceof ASTExpression)){
       System.out.println(toString(prefix));
     }
 
