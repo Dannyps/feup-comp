@@ -17,6 +17,10 @@ javacc $JJ_FILE || read
 # Compile generated java code
 javac *.java || read
 
+cd ../symbolTable
+
+# Compile generated java code
+javac *.java || read
 
 # Run syntax analyzer
 read -p "Press any key to continue..."
