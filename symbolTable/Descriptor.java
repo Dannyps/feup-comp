@@ -1,4 +1,5 @@
-public enum descriptorType {METHOD, VARIABLE_DECLARATION, PARAMETER, CLASS_DECLARATION};
+public enum descriptorType {
+    METHOD, VARIABLE_DECLARATION, PARAMETER, CLASS_DECLARATION};
 
 public abstract class Descriptor {
     private descriptorType type;

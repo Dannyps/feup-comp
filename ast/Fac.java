@@ -22,6 +22,8 @@ public class Fac/*@bgen(jjtree)*/implements FacTreeConstants, FacConstants {/*@b
             Fac fac = new Fac(fileReader);
             SimpleNode root = fac.Program();
 
+            Main.main(root);
+
             root.dump("");
 
             System.exit(0);
