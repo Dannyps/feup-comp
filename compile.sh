@@ -11,18 +11,19 @@ SYNTAX_ANALYZER_FILE="Fac"
 jjtree $JJT_FILE || exit 1
 
 # Generate java code
-cd ast
-javacc $JJ_FILE || read 
+javacc ast/$JJ_FILE || read 
 
 # Compile generated java code
-javac *.java || read
+javac ast/*.java || read
 
-cd ../symbolTable
+#cd ../symbolTable
 
 # Compile generated java code
-javac *.java || read
+#javac *.java || read
+
+#cd ../ast
 
 # Run syntax analyzer
 read -p "Press any key to continue..."
 clear
-java $SYNTAX_ANALYZER_FILE ../$1 || read
+java ast.$SYNTAX_ANALYZER_FILE $1 || read

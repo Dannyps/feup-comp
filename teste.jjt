@@ -4,6 +4,9 @@ options {
     JJTREE_OUTPUT_DIRECTORY="ast";
 }
 PARSER_BEGIN(Fac)
+
+package ast;
+
 import java.io.FileReader;
 import java.io.FileNotFoundException;
 
