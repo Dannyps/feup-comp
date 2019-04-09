@@ -1,5 +1,5 @@
 public class Main {
-    public static void main(SimpleNode root) {
+    public static void createSymbolTable(SimpleNode root) {
 
         System.out.println("here");
 
