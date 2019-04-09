@@ -1,3 +1,5 @@
+package symbolTable;
+
 public class VariableDescriptor extends Descriptor {
 
     VariableDescriptor(descriptorType type) {

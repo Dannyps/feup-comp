@@ -1,3 +1,6 @@
+package symbolTable;
+
+
 public enum descriptorType {
     METHOD, 
     VARIABLE_DECLARATION, 

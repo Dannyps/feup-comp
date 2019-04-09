@@ -1,3 +1,5 @@
+package symbolTable;
+
 public class Main {
     public static void createSymbolTable(SimpleNode root) {
 

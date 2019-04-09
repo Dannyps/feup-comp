@@ -1,3 +1,4 @@
+package symbolTable;
 public abstract class Descriptor {
     private descriptorType type;
 
