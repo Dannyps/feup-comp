@@ -8,7 +8,7 @@ JJ_FILE="teste.jj"
 SYNTAX_ANALYZER_FILE="Fac"
 
 # Run JJTree
-jjtree $JJT_FILE || exit 1
+jjtree ast/$JJT_FILE || exit 1
 
 # Generate java code
 javacc ast/$JJ_FILE || read 
@@ -16,7 +16,9 @@ javacc ast/$JJ_FILE || read
 # Compile generated java code
 javac ast/*.java || read
 
-#cd ../symbolTable
+javac symbolTable/*.java || read
+
+#cd symbolTable/*.java
 
 # Compile generated java code
 #javac *.java || read

@@ -2,6 +2,9 @@
 package ast;
 
 import java.io.FileReader;
+
+import symbolTable.Main;
+
 import java.io.FileNotFoundException;
 
 public class Fac/*@bgen(jjtree)*/implements FacTreeConstants, FacConstants {/*@bgen(jjtree)*/
@@ -25,6 +28,8 @@ public class Fac/*@bgen(jjtree)*/implements FacTreeConstants, FacConstants {/*@b
             SimpleNode root = fac.Program();
 
             root.dump("");
+
+            Main.createSymbolTable(root);
 
             System.exit(0);
 
