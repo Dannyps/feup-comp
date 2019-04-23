@@ -63,7 +63,7 @@ class SimpleNode implements Node {
      you need to do. */
 
   public String toString() {
-	return FacTreeConstants.jjtNodeName[id];
+	  return FacTreeConstants.jjtNodeName[id];
   }
   public String toString(String prefix) { return prefix + toString(); }
 

@@ -17,7 +17,7 @@ class ASTVarDeclaration extends SimpleNode {
   public String toString() {
     Node type = this.jjtGetChild(0);
     if(type instanceof ASTType) {
-  	  return "Variable Declaration : " + ((ASTType)type).getDataType() + " " + this.identifier;
+  	  return "Variable Declaration:" + ((ASTType)type).getDataType() + " " + this.identifier;
     } else {
       return "error";
     }

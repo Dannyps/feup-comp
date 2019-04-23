@@ -7,11 +7,10 @@ import ast.*;
 
 public class Main {
 
-    static HashMap<String, ClassDeclaration> allClasses;
+    static HashMap<String, ClassDeclaration> allClasses = new HashMap<>();
 
     public Main() {
 
-        allClasses = new HashMap<>();
     }
 
     public static void createSymbolTable(SimpleNode root) {
@@ -29,10 +28,7 @@ public class Main {
                 case "Class declaration" : {
                     System.out.println("found one class");
                     String name = splited[1];
-                    System.out.println(name);
-
                     ClassDeclaration classDeclaration = new ClassDeclaration(child);
-
                     allClasses.put(name, classDeclaration);
                 } break;
             }
@@ -46,6 +42,20 @@ public class Main {
     public static void showChilds(Node node) {
         for(int i = 0 ; i < node.jjtGetNumChildren() ; i++) {
             Node child = node.jjtGetChild(i);
+
+            String[] splited = child.toString().split(":");
+
+            String type = splited[0];
+
+            switch(type) {
+                case "Variable Declaration" : {
+                    System.out.println("found one class");
+                    String name = splited[1];
+                    ClassDeclaration classDeclaration = new ClassDeclaration(child);
+                    allClasses.put(name, classDeclaration);
+                } break;
+            }
+
             System.out.println(child);
             showChilds(child);
         }
