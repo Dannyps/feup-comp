@@ -23,7 +23,7 @@ class ASTClassDeclaration extends SimpleNode {
   
   @Override
   public String toString() {
-    String str = "Class declaration : " + this.className;
+    String str = "Class declaration:" + this.className;
     if(this.extendsClassName != null)
       str += " (extends " + this.extendsClassName + ")";
 
