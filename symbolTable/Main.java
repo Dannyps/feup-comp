@@ -28,6 +28,10 @@ public class Main {
                 case "Class declaration" : {
                     System.out.println("found one class");
                     String name = splited[1];
+                    if(allClasses.get(name)!=null){
+                        System.err.println("Error! Class '" + name + "' already exists!");
+                        System.exit(-1);
+                    }
                     ClassDeclaration classDeclaration = new ClassDeclaration(child);
                     allClasses.put(name, classDeclaration);
                 } break;
