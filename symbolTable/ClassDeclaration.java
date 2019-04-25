@@ -27,8 +27,8 @@ public class ClassDeclaration extends Descriptor {
     }
 
     public void addVariable(Node node, String name) {
-        VariableDeclaration variableDescriptor = new VariableDeclaration(node, name);
-        allVariables.put(name, variableDescriptor);
+        VariableDeclaration variableDeclaration = new VariableDeclaration(node, name);
+        allVariables.put(variableDeclaration.getName(), variableDeclaration);
     }
 
     public Boolean haveMethod(String name) {
@@ -37,7 +37,7 @@ public class ClassDeclaration extends Descriptor {
 
     public Descriptor addMethod(Node node, String name) {
         MethodDeclaration methodDeclaration = new MethodDeclaration(node, name);
-        allMethods.put(name, methodDeclaration);
+        allMethods.put(methodDeclaration.getName(), methodDeclaration);
         return methodDeclaration;
     }
 

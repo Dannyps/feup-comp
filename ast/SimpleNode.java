@@ -13,7 +13,7 @@ class SimpleNode implements Node {
   // added
   public String str;
   public Integer val;
-  public int Op = 0;
+  public Integer op = 0;
   
 
   public SimpleNode(int i) {
@@ -79,8 +79,8 @@ class SimpleNode implements Node {
     }
 
 
-    if(this.Op != 0) {
-      System.out.println(prefix+MyConstants.ops[this.Op-1]);
+    if(this.op != 0) {
+      System.out.println(prefix+MyConstants.ops[this.op-1]);
     }
     if(children == null && this.val != null) {
       System.out.println(prefix+this.val);

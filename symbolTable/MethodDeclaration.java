@@ -22,22 +22,30 @@ public class MethodDeclaration extends Descriptor {
         allParameters = new HashMap<>();
     }
 
-    public Boolean havaVariable(String name) {
+    public Boolean haveVariable(String name) {
         return allVariables.containsKey(name);
     }
 
     public void addVariable(Node node, String name) {
-        VariableDeclaration variableDescriptor = new VariableDeclaration(node, name);
-        allVariables.put(name, variableDescriptor);
+        VariableDeclaration variableDeclaration = new VariableDeclaration(node, name);
+        allVariables.put(variableDeclaration.getName(), variableDeclaration);
     }
 
-    public Boolean havaParameter(String name) {
+    public HashMap<String, VariableDeclaration> getAllVariables() {
+        return allVariables;
+    }
+
+    public Boolean haveParameter(String name) {
         return allParameters.containsKey(name);
     }
 
     public void addParameter(Node node, String name) {
-        VariableDeclaration variableDescriptor = new VariableDeclaration(node, name);
-        allVariables.put(name, variableDescriptor);
+        VariableDeclaration variableDeclaration = new VariableDeclaration(node, name);
+        allParameters.put(variableDeclaration.getName(), variableDeclaration);
+    }
+
+    public HashMap<String, VariableDeclaration> getAllParameters() {
+        return allParameters;
     }
 
     @Override
@@ -47,9 +55,5 @@ public class MethodDeclaration extends Descriptor {
 
     public String getType() {
         return type;
-    }
-
-    public HashMap<String, VariableDeclaration> getAllVariables() {
-        return allVariables;
     }
 }
