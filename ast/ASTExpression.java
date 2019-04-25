@@ -11,5 +11,6 @@ class ASTExpression extends SimpleNode {
   public ASTExpression(Fac p, int id) {
     super(p, id);
   }
+
 }
-/* JavaCC - OriginalChecksum=10b4948cd8c559d8b643ab790c01ace2 (do not edit this line) */
+/* JavaCC - OriginalChecksum=3956e717ee7cab56b636c65b5a28faff (do not edit this line) */

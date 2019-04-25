@@ -1,9 +1,13 @@
 class x {
     int y;
 
+
 	public int estimatePi100(int n) {
 
         int j;
+
+        y = 5;
+
 
         return 0;
 	}

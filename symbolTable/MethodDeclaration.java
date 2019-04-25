@@ -10,14 +10,14 @@ public class MethodDeclaration extends Descriptor {
     private HashMap<String, VariableDeclaration> allVariables;
     private HashMap<String, VariableDeclaration> allParameters;
 
+    private String type;
     private String name;
-
 
     public MethodDeclaration(Node node, String name) {
         super(node, DescriptorType.METHOD);
-
-        this.name = name;
-
+        String[] splitedName = name.split(" ");
+        type = splitedName[0];
+        this.name = splitedName[1];
         allVariables = new HashMap<>();
         allParameters = new HashMap<>();
     }
@@ -43,5 +43,13 @@ public class MethodDeclaration extends Descriptor {
     @Override
     public String getName() {
         return name;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public HashMap<String, VariableDeclaration> getAllVariables() {
+        return allVariables;
     }
 }

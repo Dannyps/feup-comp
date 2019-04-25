@@ -15,7 +15,7 @@ public abstract class Descriptor {
         return node;
     }
 
-    public DescriptorType getType() {
+    public DescriptorType getDescriptorType() {
         return descriptorType;
     }
 

@@ -45,4 +45,12 @@ public class ClassDeclaration extends Descriptor {
     public String getName() {
         return name;
     }
+
+    public HashMap<String, MethodDeclaration> getAllMethods() {
+        return allMethods;
+    }
+
+    public HashMap<String, VariableDeclaration> getAllVariables() {
+        return allVariables;
+    }
 }
