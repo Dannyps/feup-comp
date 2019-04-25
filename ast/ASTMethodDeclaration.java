@@ -17,7 +17,7 @@ class ASTMethodDeclaration extends SimpleNode {
   @Override
   public String toString() {
     ASTType returnType = (ASTType) this.jjtGetChild(0);
-    return "Method declaration : " + returnType.getDataType() + " " + this.identifier + "()";
+    return "Method declaration:" + returnType.getDataType() + " " + this.identifier + "()";
   }
 
 }

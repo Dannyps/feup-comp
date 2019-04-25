@@ -1,7 +1,7 @@
 package symbolTable;
 
 
-public enum descriptorType {
+public enum DescriptorType {
     METHOD, 
     VARIABLE_DECLARATION, 
     PARAMETER, 

@@ -18,7 +18,7 @@ class ASTMethodParameter extends SimpleNode {
   public String toString() {
     Node type = this.jjtGetChild(0);
     if(type instanceof ASTType) {
-  	  return "Parameter : " + ((ASTType)type).getDataType() + " " + this.identifier;
+  	  return "Parameter:" + ((ASTType)type).getDataType() + " " + this.identifier;
     } else {
       return "error";
     }

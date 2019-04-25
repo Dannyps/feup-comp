@@ -27,5 +27,10 @@ class ASTType extends SimpleNode {
   public String getDataType() {
   	return this.dataType + (this.isArray ? "[]" : "");
   }
+
+  // @Override
+  // public String toString() {
+  //   return "Type:" + getDataType();
+  // }
 }
 /* JavaCC - OriginalChecksum=c5ea9ffbbbb56d16d70564d86ace4dac (do not edit this line) */

@@ -5,24 +5,24 @@ import java.util.HashMap;
 
 import ast.*;
 
-public class ClassDeclaration extends Descriptor {
+public class MethodDeclaration extends Descriptor {
     private boolean isStatic = false, isPublic = false;
-
     private HashMap<String, VariableDeclaration> allVariables;
-    private HashMap<String, MethodDeclaration> allMethods;
+    private HashMap<String, VariableDeclaration> allParameters;
 
     private String name;
 
-    public ClassDeclaration(Node node, String name) {
-        super(node, DescriptorType.CLASS_DECLARATION);
+
+    public MethodDeclaration(Node node, String name) {
+        super(node, DescriptorType.METHOD);
 
         this.name = name;
 
         allVariables = new HashMap<>();
-        allMethods = new HashMap<>();
+        allParameters = new HashMap<>();
     }
 
-    public Boolean haveVariable(String name) {
+    public Boolean havaVariable(String name) {
         return allVariables.containsKey(name);
     }
 
@@ -31,14 +31,13 @@ public class ClassDeclaration extends Descriptor {
         allVariables.put(name, variableDescriptor);
     }
 
-    public Boolean haveMethod(String name) {
-        return allMethods.containsKey(name);
+    public Boolean havaParameter(String name) {
+        return allParameters.containsKey(name);
     }
 
-    public Descriptor addMethod(Node node, String name) {
-        MethodDeclaration methodDeclaration = new MethodDeclaration(node, name);
-        allMethods.put(name, methodDeclaration);
-        return methodDeclaration;
+    public void addParameter(Node node, String name) {
+        VariableDeclaration variableDescriptor = new VariableDeclaration(node, name);
+        allVariables.put(name, variableDescriptor);
     }
 
     @Override
