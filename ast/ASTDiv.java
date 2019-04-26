@@ -6,6 +6,7 @@ public
 class ASTDiv extends SimpleNode {
   public ASTDiv(int id) {
     super(id);
+    this.op = MyConstants.DIV;
   }
 
   public ASTDiv(Fac p, int id) {

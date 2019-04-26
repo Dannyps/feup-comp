@@ -12,6 +12,7 @@ public class VariableDeclaration extends Descriptor {
         String[] splitedName = name.split(" ");
         type = splitedName[0];
         this.name = splitedName[1];
+        this.initiated = false;
     }
 
     @Override

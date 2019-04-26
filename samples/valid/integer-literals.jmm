@@ -7,8 +7,8 @@ class IntegerLiterals {
 		/* multiple digits */
 		num = 1234;
 		/* signed digits */
-		num = -1234;
-		num = +1234;
+		num = 0-1234;
+		num = 0+1234;
 		/* octal numbers */
 		num = 077;
 		num = 01;

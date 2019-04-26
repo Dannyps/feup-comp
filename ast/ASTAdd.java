@@ -6,6 +6,7 @@ public
 class ASTAdd extends SimpleNode {
   public ASTAdd(int id) {
     super(id);
+    this.op = MyConstants.ADD;
   }
 
   public ASTAdd(Fac p, int id) {

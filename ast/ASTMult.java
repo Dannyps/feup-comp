@@ -6,6 +6,7 @@ public
 class ASTMult extends SimpleNode {
   public ASTMult(int id) {
     super(id);
+    this.op = MyConstants.MUL;
   }
 
   public ASTMult(Fac p, int id) {

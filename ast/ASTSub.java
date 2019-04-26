@@ -6,6 +6,7 @@ public
 class ASTSub extends SimpleNode {
   public ASTSub(int id) {
     super(id);
+    this.op = MyConstants.SUB;
   }
 
   public ASTSub(Fac p, int id) {

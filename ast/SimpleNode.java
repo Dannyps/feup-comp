@@ -78,16 +78,11 @@ class SimpleNode implements Node {
       System.out.println(toString(prefix));
     }
 
-
-    if(this.op != 0) {
-      System.out.println(prefix+MyConstants.ops[this.op-1]);
-    }
     if(children == null && this.val != null) {
       System.out.println(prefix+this.val);
     } else if(this.str != null) {
       System.out.println(prefix+this.str);
     }
-
 
     if (children != null) {
       for (int i = 0; i < children.length; ++i) {
