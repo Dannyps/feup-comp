@@ -2,8 +2,7 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=false,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package ast;
 
-public
-class SimpleNode implements Node {
+public class SimpleNode implements Node {
   protected Node parent;
   protected Node[] children;
   protected int id;
@@ -30,8 +29,13 @@ class SimpleNode implements Node {
   public void jjtClose() {
   }
 
-  public void jjtSetParent(Node n) { parent = n; }
-  public Node jjtGetParent() { return parent; }
+  public void jjtSetParent(Node n) {
+    parent = n;
+  }
+
+  public Node jjtGetParent() {
+    return parent;
+  }
 
   public void jjtAddChild(Node n, int i) {
     if (children == null) {
@@ -52,40 +56,52 @@ class SimpleNode implements Node {
     return (children == null) ? 0 : children.length;
   }
 
-  public void jjtSetValue(Object value) { this.value = value; }
-  public Object jjtGetValue() { return value; }
+  public void jjtSetValue(Object value) {
+    this.value = value;
+  }
 
-  /* You can override these two methods in subclasses of SimpleNode to
-     customize the way the node appears when the tree is dumped.  If
-     your output uses more than one line you should override
-     toString(String), otherwise overriding toString() is probably all
-     you need to do. */
+  public Object jjtGetValue() {
+    return value;
+  }
+
+  /*
+   * You can override these two methods in subclasses of SimpleNode to customize
+   * the way the node appears when the tree is dumped. If your output uses more
+   * than one line you should override toString(String), otherwise overriding
+   * toString() is probably all you need to do.
+   */
 
   public String toString() {
-	  return FacTreeConstants.jjtNodeName[id];
+    return FacTreeConstants.jjtNodeName[id];
   }
-  public String toString(String prefix) { return prefix + toString(); }
 
-  /* Override this method if you want to customize how the node dumps
-     out its children. */
+  public String toString(String prefix) {
+    return prefix + toString();
+  }
+
+  /*
+   * Override this method if you want to customize how the node dumps out its
+   * children.
+   */
 
   public void dump(String prefix) {
     // Ignore ASTType nodes
-    if(this instanceof ASTType) return;
-    
-    if(!(this instanceof ASTTerm) && !(this instanceof ASTExpression)){
+    if (this instanceof ASTType)
+      return;
+
+    if (!(this instanceof ASTTerm) && !(this instanceof ASTExpression)) {
       System.out.println(toString(prefix));
     }
 
-    if(children == null && this.val != null) {
-      System.out.println(prefix+this.val);
-    } else if(this.str != null) {
-      System.out.println(prefix+this.str);
+    if (children == null && this.val != null) {
+      System.out.println(prefix + this.val);
+    } else if (this.str != null) {
+      System.out.println(prefix + this.str);
     }
 
     if (children != null) {
       for (int i = 0; i < children.length; ++i) {
-        SimpleNode n = (SimpleNode)children[i];
+        SimpleNode n = (SimpleNode) children[i];
         if (n != null) {
           n.dump(prefix + " ");
         }
@@ -98,4 +114,7 @@ class SimpleNode implements Node {
   }
 }
 
-/* JavaCC - OriginalChecksum=367752bf3c67e46781e1c330ea1c138c (do not edit this line) */
+/*
+ * JavaCC - OriginalChecksum=367752bf3c67e46781e1c330ea1c138c (do not edit this
+ * line)
+ */
