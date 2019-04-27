@@ -14,7 +14,7 @@ class ASTParenteses extends SimpleNode {
 
   @Override
   public String toString() {
-    return " ()";
+    return "()";
   }
 }
 /* JavaCC - OriginalChecksum=d922c7849dae43d373bef21e5bc1f48e (do not edit this line) */

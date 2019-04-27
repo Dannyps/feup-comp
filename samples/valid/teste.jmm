@@ -1,18 +1,36 @@
 class x {
-    int y;
 
+	public int getNumber(int h) {
 
-	public int estimatePi100(int n) {
+		h = 5;
 
-        int j;
-        int y;
-
-
-
-
-        y = 10;
-
-
-        return 0 + j;
+		return x.performSingleEstimate();
 	}
+
+	public boolean performSingleEstimate() {
+
+		int[] array;
+		int y;
+
+		y = 10;
+		array = new int[2];
+
+		y = array.length;
+
+
+		y = x.getNumber(array.length);
+
+		return true;
+	}
+	
+	public int getNumber2() {
+		int[] array2;
+
+		array2 = new int[2];
+
+		return array2.length;
+
+	}
+    
+
 }

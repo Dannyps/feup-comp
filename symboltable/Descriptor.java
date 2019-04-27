@@ -1,6 +1,6 @@
-package symbolTable;
+package symboltable;
 
-import ast.*;
+import ast.Node;
 
 public abstract class Descriptor {
     private DescriptorType descriptorType;

@@ -1,9 +1,11 @@
 
-package symbolTable;
+package symboltable;
 
 import java.util.HashMap;
 
-import ast.*;
+import ast.ASTType;
+import ast.Node;
+import ast.SimpleNode;
 
 public class MethodDeclaration extends Descriptor {
     private boolean isStatic = false, isPublic = false;
@@ -27,7 +29,12 @@ public class MethodDeclaration extends Descriptor {
     }
 
     public void addVariable(Node node, String name) {
-        VariableDeclaration variableDeclaration = new VariableDeclaration(node, name);
+        VariableDeclaration variableDeclaration = null;
+        if(node.jjtGetChild(0) instanceof ASTType) {
+            variableDeclaration = new VariableDeclaration(node, name, ((ASTType)node.jjtGetChild(0)).isArray);
+        } else {
+            variableDeclaration = new VariableDeclaration(node, name, false);
+        }
         allVariables.put(variableDeclaration.getName(), variableDeclaration);
     }
 
@@ -40,7 +47,12 @@ public class MethodDeclaration extends Descriptor {
     }
 
     public void addParameter(Node node, String name) {
-        VariableDeclaration variableDeclaration = new VariableDeclaration(node, name);
+        VariableDeclaration variableDeclaration = null;
+        if(node.jjtGetChild(0) instanceof ASTType) {
+            variableDeclaration = new VariableDeclaration(node, name, ((ASTType)node.jjtGetChild(0)).isArray);
+        } else {
+            variableDeclaration = new VariableDeclaration(node, name, false);
+        }
         allParameters.put(variableDeclaration.getName(), variableDeclaration);
     }
 

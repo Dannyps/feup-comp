@@ -11,7 +11,7 @@ class ASTType extends SimpleNode {
   /**
    * @brief Flag telling wether the this type is an array or not
    */
-  protected Boolean isArray = false;
+  public Boolean isArray = false;
 
   public ASTType(int id) {
     super(id);

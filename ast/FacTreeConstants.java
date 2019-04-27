@@ -23,17 +23,16 @@ public interface FacTreeConstants
   public int JJTWHILE = 17;
   public int JJTWHILECONDITION = 18;
   public int JJTWHILEBODY = 19;
-  public int JJTEXPRESSION = 20;
-  public int JJTAND = 21;
-  public int JJTPARENTESES = 22;
-  public int JJTDOT = 23;
-  public int JJTLESS = 24;
-  public int JJTADD = 25;
-  public int JJTSUB = 26;
-  public int JJTMULT = 27;
-  public int JJTDIV = 28;
-  public int JJTTERM = 29;
-  public int JJTNEW = 30;
+  public int JJTAND = 20;
+  public int JJTPARENTESES = 21;
+  public int JJTDOT = 22;
+  public int JJTLESS = 23;
+  public int JJTADD = 24;
+  public int JJTSUB = 25;
+  public int JJTMULT = 26;
+  public int JJTDIV = 27;
+  public int JJTTERM = 28;
+  public int JJTNEW = 29;
 
 
   public String[] jjtNodeName = {
@@ -57,7 +56,6 @@ public interface FacTreeConstants
     "While",
     "WhileCondition",
     "WhileBody",
-    "Expression",
     "And",
     "Parenteses",
     "Dot",
@@ -70,4 +68,4 @@ public interface FacTreeConstants
     "New",
   };
 }
-/* JavaCC - OriginalChecksum=3656a8dd2c3faf6e6d71fd2b702073e4 (do not edit this line) */
+/* JavaCC - OriginalChecksum=fa61e05035ac1c64f091892c597bcc7b (do not edit this line) */

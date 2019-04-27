@@ -1,4 +1,4 @@
-package symbolTable;
+package symboltable;
 
 public enum dataType {
     INTEGER, 

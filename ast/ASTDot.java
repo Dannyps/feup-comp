@@ -17,4 +17,4 @@ class ASTDot extends SimpleNode {
     return ".";
   }
 }
-/* JavaCC - OriginalChecksum=5a17ba82a38ada2b518d19e6e2cee616 (do not edit this line) */
+/* JavaCC - OriginalChecksum=046a0797d8d9ab2132ccb3353e337f31 (do not edit this line) */

@@ -1,5 +1,4 @@
-package symbolTable;
-
+package symboltable;
 
 public enum DescriptorType {
     METHOD, 

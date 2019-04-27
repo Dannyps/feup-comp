@@ -14,7 +14,6 @@ class SimpleNode implements Node {
   public String str;
   public Integer val;
   public Integer op = 0;
-  
 
   public SimpleNode(int i) {
     id = i;

@@ -1,7 +1,6 @@
 options {
     LOOKAHEAD=1;
     MULTI=true;
-    JJTREE_OUTPUT_DIRECTORY="ast";
 }
 PARSER_BEGIN(Fac)
 
@@ -301,47 +300,46 @@ void WhileBody() : {}
 	Statement()	
 }
 
-void Expression() : {Token t;} 
+void Expression() #void : {} 
 {
     {int x=0; int y=2;}
-    Expression1(1)
+    Expression1()
     (
         <AND> Expression() #And(2) |
         <OPEN_BRACKET> Expression() <CLOSE_BRACKET> |
-        <DOT> Term(0)
+        <DOT> Term()
         (
-            {y=3;} <OPEN_PARENTHESES> (Expression() {x=1;} (<VIRG> Expression() {x=2;})*)? #Parenteses(x) <CLOSE_PARENTHESES>
+            {y=3;} <OPEN_PARENTHESES> (Expression() {x++;} (<VIRG> Expression() {x++;})*)? #Parenteses(x) <CLOSE_PARENTHESES>
         )? #Dot(y)
     )?
 }
 
-void Expression1(int sign) #void : {} 
+void Expression1() #void : {} 
 {
-    Expression2(sign) (<LESS> Expression2(1) #Less(2))*
+    Expression2() (<LESS> Expression2() #Less(2))*
 }
 
-void Expression2(int sign) #void : {} 
+void Expression2() #void : {} 
 {
-    Expression3(sign) 
+    Expression3() 
     [
-        <SUM> Expression3(1) #Add(2) | 
-        <SUB> Expression3(1) #Sub(2)
+        <SUM> Expression3() #Add(2) | 
+        <SUB> Expression3() #Sub(2)
     ]
 }
 
-void Expression3(int sign) #void : {} 
+void Expression3() #void : {} 
 {
-    Term(sign) 
+    Term() 
     [
-        <MULT> Expression3(1) #Mult(2) | 
-        <DIV> Expression3(1) #Div(2)
+        <MULT> Expression3() #Mult(2) | 
+        <DIV> Expression3() #Div(2)
     ]
 }
 
-void Term(int sign) : {Token t;}
+void Term() : {Token t;}
 {
     (t=<INTEGERLITERAL> | t=<OCTAL_NUMBER> | t=<HEX_NUMBER> | t=<BINARY_NUMBER>)
-    //{jjtThis.val = sign * Integer.parseInt(t.image);} |
     {jjtThis.str = t.image;} | 
     t=<TRUE> {jjtThis.str = t.image;}|
     t=<FALSE> {jjtThis.str = t.image;}|
@@ -351,9 +349,9 @@ void Term(int sign) : {Token t;}
     <NEW> {} 
     (
         <INT> <OPEN_BRACKET> Expression() <CLOSE_BRACKET> | 
-        Term(0) #New(1) <OPEN_PARENTHESES> <CLOSE_PARENTHESES>
+        Term() #New(1) <OPEN_PARENTHESES> <CLOSE_PARENTHESES>
     ) |
-    t=<NOT> Term(1) {jjtThis.str = t.image;}|
-    <OPEN_PARENTHESES> Expression() <CLOSE_PARENTHESES>
+    t=<NOT> Term() {jjtThis.str = t.image;} |
+    <OPEN_PARENTHESES> Expression() #Parenteses(1) <CLOSE_PARENTHESES>
 }
 
