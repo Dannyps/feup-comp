@@ -1,5 +1,7 @@
 class x {
 
+	int i4;
+
 	public int getNumber(int h) {
 
 		h = 5;
@@ -27,6 +29,7 @@ class x {
 		int[] array2;
 
 		array2 = new int[2];
+		i4 = 5;
 
 		return array2.length;
 
