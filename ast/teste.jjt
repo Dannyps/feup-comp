@@ -8,6 +8,7 @@ package ast;
 
 import java.io.FileReader;
 import java.io.FileNotFoundException;
+import symboltable.*;
 
 public class Fac {
     public int computeFac(SimpleNode node) {
@@ -30,6 +31,8 @@ public class Fac {
             SimpleNode root = fac.Program();
     
             root.dump("");
+
+            Main.createSymbolTable(root);
     
             System.exit(0);
             
