@@ -1,2 +1,6 @@
 *.class
 *.jj
+# ignore auto-generated java files inside ast folder
+ast/
+# ignore the folder containing the class files
+bin/
