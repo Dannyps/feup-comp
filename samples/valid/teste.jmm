@@ -5,16 +5,14 @@ class x {
 	public int estimatePi100(int n) {
 
         int j;
-        j = 5;
-
-        y = 5 + 20;
+        int y;
 
 
-        return 5 - 10;
+
+
+        y = 10;
+
+
+        return 0 + j;
 	}
-
-	public int estimatePi100(int n) {
-    
-        return 0;
-    }
 }

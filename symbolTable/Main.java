@@ -48,7 +48,71 @@ public class Main {
     }
 
     public static void checkReturn(Node node, Node parent) {
-        System.out.println("Checking return in method " + parent);
+        System.out.println("RETURN");
+        String methodName = parent.toString().split(":")[1].split(" ")[1];
+        System.out.println("Method " + methodName + " return");
+        SimpleNode simpleNode = (SimpleNode) node.jjtGetChild(0).jjtGetChild(0);
+        if(classDeclaration.haveMethod(methodName)) {
+            MethodDeclaration methodDeclaration = classDeclaration.getAllMethods().get(methodName);       
+            if(simpleNode.jjtGetNumChildren() == 0) {
+                System.out.println("have 0");
+                if(methodDeclaration.getType().equals("int")) {
+                    try {
+                        Integer number = Integer.parseInt(simpleNode.str);
+                        return;
+                    } catch(NumberFormatException e) {
+                        VariableDeclaration variableDeclaration = getVariable(methodDeclaration, simpleNode.str);
+                        if(variableDeclaration.getType().equals("int")) {
+                            if(variableDeclaration.getInitiated()) {
+                                return;
+                            } else {
+                                String errorMessage = "Variable " + variableDeclaration.getName() + " is not initialized";
+                                showError(errorMessage);
+                            }
+                        } else {
+                            String errorMessage = "Method " + methodName + " return type " + methodDeclaration.getType() + " and variable " + variableDeclaration.getName() + " is type " + variableDeclaration.getType();
+                            showError(errorMessage);
+                        }
+                    }
+                } else if(methodDeclaration.getType().equals("boolean")) {
+                    if(simpleNode.str.equals("true") || simpleNode.str.equals("false")) {
+                        return;
+                    } else {
+                        VariableDeclaration variableDeclaration = getVariable(methodDeclaration, simpleNode.str);
+                        if(variableDeclaration.getType().equals("boolean")) {
+                            if(variableDeclaration.getInitiated()) {
+                                return;
+                            } else {
+                                String errorMessage = "Variable " + variableDeclaration.getName() + " is not initialized";
+                                showError(errorMessage);
+                            }
+                        } else {
+                            String errorMessage = "Method " + methodName + " return type " + methodDeclaration.getType() + " and variable " + variableDeclaration.getName() + " is type " + variableDeclaration.getType();
+                            showError(errorMessage);
+                        }
+                    }
+                }
+            } else if(simpleNode.jjtGetNumChildren() == 2) {
+                SimpleNode[] childs = new SimpleNode[2];
+                childs[0] = (SimpleNode) simpleNode.jjtGetChild(0);
+                childs[1] = (SimpleNode) simpleNode.jjtGetChild(1);
+
+                if(methodDeclaration.getType().equals("int")) {
+                    if(simpleNode.op >= 1 && simpleNode.op <= 4) {
+                        checkVariableInt(methodDeclaration, null, childs);
+                    }
+                } else if(methodDeclaration.getType().equals("boolean")) {
+                    if(simpleNode.op.equals(MyConstants.AND)) {
+                        checkVariableBoolean(methodDeclaration, null, childs);
+                    } else if(simpleNode.op.equals(MyConstants.LESS)) {
+                        checkVariableInt(methodDeclaration, null, childs);
+                    }
+                }
+            }
+        } else {
+            String errorMessage = classDeclaration.getName() + " dont have method " + methodName;
+            showError(errorMessage);
+        }
     }
 
     public static void createClass(Node node) {
@@ -75,15 +139,20 @@ public class Main {
             if(!classDeclaration.haveVariable(name)) {
                 classDeclaration.addVariable(node, typeAndName);
             } else {
-                String errorMessage = classDeclaration.getName() + " already have variable with name " + name;
+                String errorMessage = "Class " + classDeclaration.getName() + " already have variable with name " + name;
                 showError(errorMessage);                
             }
         } else if(descriptor instanceof MethodDeclaration) {
             MethodDeclaration methodDeclaration = (MethodDeclaration) descriptor;
             if(!methodDeclaration.haveVariable(name) && !methodDeclaration.haveParameter(name)) {
-                methodDeclaration.addVariable(node, typeAndName);
+                if(!classDeclaration.haveVariable(name)) {
+                    methodDeclaration.addVariable(node, typeAndName);
+                } else {
+                    String errorMessage = "Class " + classDeclaration.getName() + " already have variable with name " + name;
+                    showError(errorMessage);                
+                }
             } else {
-                String errorMessage = methodDeclaration.getName() + " already have variable with name " + name;
+                String errorMessage = "Method " + methodDeclaration.getName() + " already have variable with name " + name;
                 showError(errorMessage);
             }
         }
@@ -133,186 +202,260 @@ public class Main {
         MethodDeclaration methodDeclaration = (MethodDeclaration) descriptor;
         
         Node child = node.jjtGetChild(0);
-        SimpleNode[] simpleNodes = new SimpleNode[2];
-        simpleNodes[0] = (SimpleNode)node.jjtGetChild(0).jjtGetChild(0);
-        simpleNodes[1] = (SimpleNode)node.jjtGetChild(1).jjtGetChild(0);
+        SimpleNode[] simpleNodes = new SimpleNode[1];
+        simpleNodes[0] = (SimpleNode)node.jjtGetChild(1).jjtGetChild(0);
 
-        String leftSide = simpleNodes[0].str;
-        Integer rightSideNumber = null;
-        String rightSideString = null;
-
-        try {
-            rightSideNumber = Integer.parseInt(simpleNodes[1].str);
-        } catch (NumberFormatException e1) {
-            rightSideString = simpleNodes[1].str;
-        }
-
-        VariableDeclaration variableDeclaration = getLeftSideVariable(methodDeclaration, leftSide);
+        VariableDeclaration variableDeclaration = getVariable(methodDeclaration, ((SimpleNode)child.jjtGetChild(0)).str);
 
         if(variableDeclaration.getType().equals("int")) {
-            initiateVariableInt(methodDeclaration, variableDeclaration, rightSideString, rightSideNumber, simpleNodes);
+            checkVariableInt(methodDeclaration, variableDeclaration, simpleNodes);
         } else if(variableDeclaration.getType().equals("boolean")) {
-            initiateVariableBoolean(methodDeclaration, variableDeclaration, rightSideString, simpleNodes);
+            checkVariableBoolean(methodDeclaration, variableDeclaration, simpleNodes);
         }
     }
 
-    private static VariableDeclaration getLeftSideVariable(MethodDeclaration methodDeclaration, String leftSide) {
+    private static VariableDeclaration getVariable(MethodDeclaration methodDeclaration, String name) {
         VariableDeclaration variableDeclaration = null;
-        if(leftSide != null) {
-            if(methodDeclaration.haveParameter(leftSide)) {
-                variableDeclaration = methodDeclaration.getAllParameters().get(leftSide);
-            } else if(methodDeclaration.haveVariable(leftSide)) {
-                variableDeclaration = methodDeclaration.getAllVariables().get(leftSide);
-            } else if(classDeclaration.haveVariable(leftSide)) {
-                variableDeclaration = classDeclaration.getAllVariables().get(leftSide);
+        if(name != null) {
+            if(methodDeclaration.haveParameter(name)) {
+                variableDeclaration = methodDeclaration.getAllParameters().get(name);
+            } else if(methodDeclaration.haveVariable(name)) {
+                variableDeclaration = methodDeclaration.getAllVariables().get(name);
+            } else if(classDeclaration.haveVariable(name)) {
+                variableDeclaration = classDeclaration.getAllVariables().get(name);
             } else {
-                String errorMessage = "Variable " + leftSide + " dont exist on method " + methodDeclaration.getNode() + " and not in class " + classDeclaration.getNode();
+                String errorMessage = "Variable " + name + " dont exist on method " + methodDeclaration.getNode() + " and not in class " + classDeclaration.getNode();
                 showError(errorMessage);
             }
         }
         return variableDeclaration;
     }
 
-    private static void initiateVariableInt(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration, String rightSideString, Integer rightSideNumber, SimpleNode[] simpleNodes) {
-        if(rightSideNumber != null) {
-            variableDeclaration.setInitiated(true);
-            return;
-        } else if(rightSideString != null) {
-            checkIfExistVariableAndYourType(methodDeclaration, variableDeclaration, rightSideString, "int");
-        } else if(!simpleNodes[1].op.equals(0)) {
-            System.out.println("Found sub operation " + MyConstants.ops[simpleNodes[1].op - 1]);
-            initiateVariableIntRecursively(methodDeclaration, variableDeclaration, simpleNodes[1]);
-        } else {
-            String errorMessage = "In right side need to have a type of int";
-            showError(errorMessage);
-        }
-    }
-
-    private static void initiateVariableBoolean(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration, String rightSideString, SimpleNode[] simpleNodes) {
-        if(rightSideString != null) {
-            if(rightSideString.equals("true") || rightSideString.equals("false")) {
-                variableDeclaration.setInitiated(true);
-                return;
-            } else if(MyConstants.ops[simpleNodes[1].op - 1].equals("&&")) {
-                initiateVariableBooleanRecursiverly(methodDeclaration, variableDeclaration, simpleNodes[1]);
-            }
-            checkIfExistVariableAndYourType(methodDeclaration, variableDeclaration, rightSideString, "boolean");
-        } else {
-            String errorMessage = "In right dont have a valid argument";
-            showError(errorMessage);
-        }
-    }
-
-    private static void checkIfExistVariableAndYourType(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration, String rightSideString, String type) {
-        if(classDeclaration.haveMethod(rightSideString)) {
-            if(classDeclaration.getAllMethods().get(rightSideString).getType().equals(type)) {
-                variableDeclaration.setInitiated(true);
-            } else {
-                String errorMessage = "Type of " + rightSideString + "is not " + type;
-                showError(errorMessage);
-            }
-        } else if(classDeclaration.haveVariable(rightSideString)) {
-            if(classDeclaration.getAllVariables().get(rightSideString).getType().equals(type)) {
-                if(classDeclaration.getAllVariables().get(rightSideString).getInitiated()) {
-                    variableDeclaration.setInitiated(true);
-                } else {
-                    String errorMessage = "Variable " + rightSideString + " from class " + classDeclaration.getNode() + "is not initialized";
-                    showError(errorMessage);
-                }
-            } else {
-                String errorMessage = "Type of " + rightSideString + "is not " + type;
-                showError(errorMessage);
-            }
-        } else if(methodDeclaration.haveVariable(rightSideString)) {
-            if(methodDeclaration.getAllVariables().get(rightSideString).getType().equals(type)) {
-                if(methodDeclaration.getAllVariables().get(rightSideString).getInitiated()) {
-                    variableDeclaration.setInitiated(true);
-                } else {
-                    String errorMessage = "Variable " + rightSideString + " from method " + methodDeclaration.getNode() + " is not initialized";
-                    showError(errorMessage);
-                }
-            } else {
-                String errorMessage = "Type of " + rightSideString + " is not " + type;
-                showError(errorMessage);
-            }
-        }
-    }
-
-    private static void initiateVariableIntRecursively(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration, SimpleNode simpleNode) {
-        SimpleNode[] childs = new SimpleNode[2];
-        childs[0] = (SimpleNode) simpleNode.jjtGetChild(0);
-        childs[1] = (SimpleNode) simpleNode.jjtGetChild(1);
-        
-        String leftSideString = childs[0].str;
-        String rightSideString = childs[1].str;
-
-        try {
-            Integer leftSideNumber = Integer.parseInt(leftSideString);
+    private static void checkVariableInt(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration, SimpleNode[] simpleNodes) {
+        if(simpleNodes.length == 1) {
             try {
-                //dois inteiros
-                Integer rightSideNumber = Integer.parseInt(rightSideString);
+                Integer number = Integer.parseInt(simpleNodes[0].str);
+            } catch(NumberFormatException e) {
+                if(simpleNodes[0].op >= 1 && simpleNodes[0].op <= 4) {
+                    System.out.println("Found sub operation " + MyConstants.ops[simpleNodes[0].op - 1]);
+                    SimpleNode[] childs = new SimpleNode[2];
+                    childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
+                    childs[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
+                    checkVariableInt(methodDeclaration, variableDeclaration, childs);
+                } else {
+                    checkIfExistVariableAndYourType(methodDeclaration, simpleNodes[0].str, "int");
+                }
+            }
+            if(variableDeclaration != null) {
                 variableDeclaration.setInitiated(true);
+            }
+        } else if(simpleNodes.length == 2) {
+            SimpleNode[] childs = new SimpleNode[2];
+            childs[0] = (SimpleNode) simpleNodes[0];
+            childs[1] = (SimpleNode) simpleNodes[1];
+            try {
+                Integer leftSideNumber = Integer.parseInt(childs[0].str);
+                try {
+                    //dois inteiros
+                    Integer rightSideNumber = Integer.parseInt(childs[1].str);
+                } catch (NumberFormatException e1) {
+                    //recursividade a direita
+                    if(childs[1].op >= 1 && childs[1].op <= 4) {
+                        SimpleNode[] newChilds = new SimpleNode[2];
+                        newChilds[0] = (SimpleNode) childs[1].jjtGetChild(0);
+                        newChilds[1] = (SimpleNode) childs[1].jjtGetChild(1);
+                        checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
+                    } else {
+                        //variavel a direita
+                        checkIfExistVariableAndYourType(methodDeclaration, childs[1].str, "int");
+                    }
+                }
+
+                if(variableDeclaration != null) {
+                    variableDeclaration.setInitiated(true);
+                }
                 return;
             } catch (NumberFormatException e1) {
-                //string do lado direito
-                if(!childs[1].op.equals(0)) {
-                    initiateVariableIntRecursively(methodDeclaration, variableDeclaration, childs[1]);
-                } else {
-                    checkIfExistVariableAndYourType(methodDeclaration, variableDeclaration, rightSideString, "int");
+                try {
+                    //inteiro lado direito
+                    Integer rightSideNumber = Integer.parseInt(childs[1].str);
+                    //recursividade a esquerda
+                    if(childs[0].op >= 1 && childs[0].op <= 4) {
+                        SimpleNode[] newChilds = new SimpleNode[2];
+                        newChilds[0] = (SimpleNode) childs[0].jjtGetChild(0);
+                        newChilds[1] = (SimpleNode) childs[0].jjtGetChild(1);
+                        checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
+                    } else {
+                        //variavel a esquerda
+                        checkIfExistVariableAndYourType(methodDeclaration, childs[0].str, "int");
+                    }
+                    if(variableDeclaration != null) {
+                        variableDeclaration.setInitiated(true);
+                    }
+                } catch (NumberFormatException e2) {
+                    //duas strings
+                    if(childs[0].op >= 1 && childs[0].op <= 4) {
+                        SimpleNode[] newChilds = new SimpleNode[2];
+                        newChilds[0] = (SimpleNode) childs[0].jjtGetChild(0);
+                        newChilds[1] = (SimpleNode) childs[0].jjtGetChild(1);
+                        checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
+                    } else {
+                        //variavel a esquerda
+                        checkIfExistVariableAndYourType(methodDeclaration, childs[0].str, "int");
+                    }
+
+                    if(childs[1].op >= 1 && childs[1].op <= 4) {
+                        SimpleNode[] newChilds = new SimpleNode[2];
+                        newChilds[0] = (SimpleNode) childs[1].jjtGetChild(0);
+                        newChilds[1] = (SimpleNode) childs[1].jjtGetChild(1);
+                        checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
+                    } else {
+                        //variavel a direita
+                        checkIfExistVariableAndYourType(methodDeclaration, childs[1].str, "int");
+                    }
+
+                    if(variableDeclaration != null) {
+                        variableDeclaration.setInitiated(true);
+                    }
                 }
-            }
-        } catch (NumberFormatException e1) {
-            try {
-                //string do lado esquerdo
-                Integer rightSideNumber = Integer.parseInt(rightSideString);
-                if(!childs[1].op.equals(0)) {
-                    initiateVariableIntRecursively(methodDeclaration, variableDeclaration, childs[0]);
-                } else {
-                    checkIfExistVariableAndYourType(methodDeclaration, variableDeclaration, rightSideString, "int");
-                }
-            } catch (NumberFormatException e2) {
-                //duas strings
-                checkIfExistVariableAndYourType(methodDeclaration, variableDeclaration, leftSideString, "int");
-                checkIfExistVariableAndYourType(methodDeclaration, variableDeclaration, rightSideString, "int");
             }
         }
     }
 
-    private static void initiateVariableBooleanRecursiverly(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration, SimpleNode simpleNode) {
-        SimpleNode[] childs = new SimpleNode[2];
-        childs[0] = (SimpleNode) simpleNode.jjtGetChild(0);
-        childs[1] = (SimpleNode) simpleNode.jjtGetChild(1);
-        
-        String leftSideString = childs[0].str;
-        String rightSideString = childs[1].str;
-
-        if(leftSideString.equals("true") || leftSideString.equals("false")) {
-            if(rightSideString.equals("true") || rightSideString.equals("false")) {
-                //dois booleanos
-                variableDeclaration.setInitiated(true);
-            } else if (MyConstants.ops[childs[1].op - 1].equals("&&")) {
-                //recursivo a direita
-                initiateVariableBooleanRecursiverly(methodDeclaration, variableDeclaration, childs[1]);
+    private static void checkVariableBoolean(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration, SimpleNode[] simpleNodes) {
+        if(simpleNodes.length == 1) {
+            if(simpleNodes[0].str.equals("true") || simpleNodes[0].str.equals("false")) {
+                if(variableDeclaration != null) {
+                    variableDeclaration.setInitiated(true);
+                    return;
+                } else {
+                    String errorMessage = "Is NULL";
+                    showError(errorMessage);
+                }
+            } else if(simpleNodes[0].op.equals(MyConstants.LESS)) {
+                System.out.println("Found sub operation " + MyConstants.ops[simpleNodes[0].op - 1]);
+                SimpleNode[] childs = new SimpleNode[2];
+                childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
+                childs[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
+                checkVariableInt(methodDeclaration, variableDeclaration, childs);
+            } else if(simpleNodes[0].op.equals(MyConstants.AND)) {
+                SimpleNode[] childs = new SimpleNode[2];
+                childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
+                childs[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
+                checkVariableBoolean(methodDeclaration, variableDeclaration, childs);
             } else {
-                //variavel ou metodo a direita
+                checkIfExistVariableAndYourType(methodDeclaration, simpleNodes[0].str, "boolean");
             }
-        } else if(rightSideString.equals("true") || rightSideString.equals("false")) {
-            if(MyConstants.ops[childs[0].op - 1].equals("&&")) {
-                //recursivo a esquerda
+        } else if(simpleNodes.length == 2) {
+            SimpleNode[] childs = new SimpleNode[2];
+            childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
+            childs[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
+
+            if(simpleNodes[0].str.equals("true") || simpleNodes[0].str.equals("false")) {
+                if(simpleNodes[1].str.equals("true") || simpleNodes[1].str.equals("false")) {
+                    variableDeclaration.setInitiated(true);
+                    return;
+                } else if(simpleNodes[1].op.equals(MyConstants.LESS)) {
+                    SimpleNode[] newChilds = new SimpleNode[2];
+                    newChilds[0] = (SimpleNode) simpleNodes[1].jjtGetChild(0);
+                    newChilds[1] = (SimpleNode) simpleNodes[1].jjtGetChild(1);
+                    checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
+                } else if(simpleNodes[1].op.equals(MyConstants.AND)) {
+                    SimpleNode[] newChilds = new SimpleNode[2];
+                    newChilds[0] = (SimpleNode) simpleNodes[1].jjtGetChild(0);
+                    newChilds[1] = (SimpleNode) simpleNodes[1].jjtGetChild(1);
+                    checkVariableBoolean(methodDeclaration, variableDeclaration, newChilds);
+                } else {
+                    checkIfExistVariableAndYourType(methodDeclaration, simpleNodes[1].str, "boolean");
+                }
+            } else if(simpleNodes[1].str.equals("true") || simpleNodes[1].str.equals("false")) {
+                if(simpleNodes[0].op.equals(MyConstants.LESS)) {
+                    SimpleNode[] newChilds = new SimpleNode[2];
+                    newChilds[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
+                    newChilds[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
+                    checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
+                } else if(simpleNodes[0].op.equals(MyConstants.AND)) {
+                    SimpleNode[] newChilds = new SimpleNode[2];
+                    newChilds[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
+                    newChilds[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
+                    checkVariableBoolean(methodDeclaration, variableDeclaration, newChilds);
+                } else {
+                    checkIfExistVariableAndYourType(methodDeclaration, simpleNodes[0].str, "boolean");
+                }
             } else {
-                //variavel ou metodo a esquerda
-                checkIfExistVariableAndYourType(methodDeclaration, variableDeclaration, leftSideString, "boolean");
+                if(simpleNodes[0].op.equals(MyConstants.LESS)) {
+                    SimpleNode[] newChilds = new SimpleNode[2];
+                    newChilds[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
+                    newChilds[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
+                    checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
+                } else if(simpleNodes[0].op.equals(MyConstants.AND)) {
+                    SimpleNode[] newChilds = new SimpleNode[2];
+                    newChilds[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
+                    newChilds[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
+                    checkVariableBoolean(methodDeclaration, variableDeclaration, newChilds);
+                } else {
+                    checkIfExistVariableAndYourType(methodDeclaration, simpleNodes[0].str, "boolean");
+                }
+
+                if(simpleNodes[1].op.equals(MyConstants.LESS)) {
+                    SimpleNode[] newChilds = new SimpleNode[2];
+                    newChilds[0] = (SimpleNode) simpleNodes[1].jjtGetChild(0);
+                    newChilds[1] = (SimpleNode) simpleNodes[1].jjtGetChild(1);
+                    checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
+                } else if(simpleNodes[1].op.equals(MyConstants.AND)) {
+                    SimpleNode[] newChilds = new SimpleNode[2];
+                    newChilds[0] = (SimpleNode) simpleNodes[1].jjtGetChild(0);
+                    newChilds[1] = (SimpleNode) simpleNodes[1].jjtGetChild(1);
+                    checkVariableBoolean(methodDeclaration, variableDeclaration, newChilds);
+                } else {
+                    checkIfExistVariableAndYourType(methodDeclaration, simpleNodes[1].str, "boolean");
+                }
+            }
+        }
+    }
+
+    private static void checkIfExistVariableAndYourType(MethodDeclaration methodDeclaration, String name, String type) {
+        if(classDeclaration.haveMethod(name)) {
+            if(classDeclaration.getAllMethods().get(name).getType().equals(type)) {
+            } else {
+                String errorMessage = "Type of " + name + "is not " + type;
+                showError(errorMessage);
+            }
+        } else if(methodDeclaration.haveVariable(name)) {
+            if(methodDeclaration.getAllVariables().get(name).getType().equals(type)) {
+                if(methodDeclaration.getAllVariables().get(name).getInitiated()) {
+                    methodDeclaration.getAllVariables().get(name).setInitiated(true);
+                    return;
+                } else {
+                    String errorMessage = "Variable " + name + " from method " + methodDeclaration.getNode() + " is not initialized";
+                    showError(errorMessage);
+                }
+            } else {
+                String errorMessage = "Type of " + name + " is not " + type;
+                showError(errorMessage);
+            }
+        } else if(classDeclaration.haveVariable(name)) {
+            if(classDeclaration.getAllVariables().get(name).getType().equals(type)) {
+                if(classDeclaration.getAllVariables().get(name).getInitiated()) {
+                    classDeclaration.getAllVariables().get(name).setInitiated(true);
+                    return;
+                } else {
+                    String errorMessage = "Variable " + name + " from class " + classDeclaration.getNode() + "is not initialized";
+                    showError(errorMessage);
+                }
+            } else {
+                String errorMessage = "Type of " + name + "is not " + type;
+                showError(errorMessage);
             }
         } else {
-            //variavel ou metodo a esquerda e direita
-            checkIfExistVariableAndYourType(methodDeclaration, variableDeclaration, leftSideString, "boolean");
-            checkIfExistVariableAndYourType(methodDeclaration, variableDeclaration, rightSideString, "boolean");
+            String errorMessage = "Variable " + name + " dont be declared";
+            showError(errorMessage);
         }
     }
 
     public static void showError(String errorMessage) {
         System.out.println();
-        System.out.println(errorMessage);
+        System.out.println("ERROR --> " + errorMessage);
         System.out.println();
         System.exit(-1);
     }
