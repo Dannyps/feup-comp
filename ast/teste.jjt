@@ -32,7 +32,8 @@ public class Fac {
     
             root.dump("");
 
-            Main.createSymbolTable(root);
+            Main main = new Main(root);
+            main.checkErrors();
     
             System.exit(0);
             
