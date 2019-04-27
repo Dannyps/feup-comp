@@ -15,12 +15,16 @@ jjtree $JJT_FILE || exit 1
 # Generate java code
 javacc $JJ_FILE || read
 
+# Go back to parent directory
 cd ..
 
+# Create folder for storing compiled java files (.class)
+mkdir -p bin
+
 # Compile generated java code
-javac ast/*.java || read
-javac symboltable/*.java || read
+javac -d bin/ ast/*.java || read
+javac -d bin/ symboltable/*.java || read
 
 read -p "Press any key to continue..."
 clear
-java ast.$SYNTAX_ANALYZER_FILE $1
+java -cp bin/ ast.$SYNTAX_ANALYZER_FILE $1
