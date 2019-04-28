@@ -281,12 +281,10 @@ public class Main {
                             if(variableDeclaration.getInitiated()) {
                                 return;
                             } else {
-                                String errorMessage = "Variable " + variableDeclaration.getName() + " is not initialized";
-                                showError(errorMessage);
+                                this.showReturnError(methodDeclaration, variableDeclaration);
                             }
                         } else {
-                            String errorMessage = "Method " + methodName + " return type " + methodDeclaration.getType() + " and variable " + variableDeclaration.getName() + " is type " + variableDeclaration.getType();
-                            showError(errorMessage);
+                            this.showReturnError(methodDeclaration, variableDeclaration);
                         }
                     }
                 } else if(methodDeclaration.getType().equals("boolean")) {
@@ -298,12 +296,10 @@ public class Main {
                             if(variableDeclaration.getInitiated()) {
                                 return;
                             } else {
-                                String errorMessage = "Variable " + variableDeclaration.getName() + " is not initialized";
-                                showError(errorMessage);
+                                this.showReturnError(methodDeclaration, variableDeclaration);
                             }
                         } else {
-                            String errorMessage = "Method " + methodName + " return type " + methodDeclaration.getType() + " and variable " + variableDeclaration.getName() + " is type " + variableDeclaration.getType();
-                            showError(errorMessage);
+                            this.showReturnError(methodDeclaration, variableDeclaration);
                         }
                     }
                 } else if(methodDeclaration.getType().equals("int[]")) {
@@ -316,8 +312,7 @@ public class Main {
                             showError(errorMessage);
                         }
                     } else {
-                        String errorMessage = "Method " + methodName + " return type " + methodDeclaration.getType() + " and variable " + variableDeclaration.getName() + " is type " + variableDeclaration.getType();
-                        showError(errorMessage);
+                        this.showReturnError(methodDeclaration, variableDeclaration);
                     }
                 }
             } else if(simpleNode.jjtGetNumChildren() == 2 && !(simpleNode instanceof ASTDot)) {
@@ -424,8 +419,7 @@ public class Main {
                         variableDeclaration.setInitiated(true);                        
                         return;
                     } else {
-                        String errorMessage = "Method " + method.getName() + " dont have return type equal than variable " + variableDeclaration.getName();
-                        showError(errorMessage);
+                        this.showReturnError(method, variableDeclaration);
                     }
                 } else {
                     for(Integer i = 0 ; i < simpleNodes[0].jjtGetChild(2).jjtGetNumChildren() ; i++) {
@@ -452,11 +446,11 @@ public class Main {
                 if(var.getInitiated()) {
                     return;
                 } else {
-                    String errorMessage = "Variable " + var.getName() + " already not been initialized";
+                    String errorMessage = "Variable " + var.getName() + " hasn't been initialized yet";
                     showError(errorMessage);
                 }
             } else {
-                String errorMessage = "Parameter of method " + methodDeclaration.getName() + " dont the same of variable " + var.getName();
+                String errorMessage = "Parameter of method " + methodDeclaration.getName() + " ("+methodDeclaration.getType()+") is not of the same type of " + var.getName() +" ("+var.getType()+")";
                 showError(errorMessage);
             }
         }
@@ -472,7 +466,7 @@ public class Main {
             } else if(classDeclaration.haveVariable(name)) {
                 variableDeclaration = classDeclaration.getAllVariables().get(name);
             } else {
-                String errorMessage = "Variable " + name + " dont exist on method " + methodDeclaration.getNode() + " and not in class " + classDeclaration.getNode();
+                String errorMessage = "The variable " + name + " is not set in the scope of the method " + methodDeclaration.getNode() + " nor in the scope of the class " + classDeclaration.getNode();
                 showError(errorMessage);
             }
         }
@@ -714,7 +708,7 @@ public class Main {
                 showError(errorMessage);
             }
         } else {
-            String errorMessage = "Variable " + name + " dont be declared";
+            String errorMessage = "Variable " + name + " is not declared";
             showError(errorMessage);
         }
     }
@@ -725,4 +719,10 @@ public class Main {
         System.out.println();
         System.exit(-1);
     }
+    
+    private void showReturnError(MethodDeclaration m, VariableDeclaration v){
+        String errorMessage = "Method " + m.getName() + " should return "+m.getType()+", returning "+v.getType()+" instead on " + v.getName();
+        showError(errorMessage);
+    }
+
 }
