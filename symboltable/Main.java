@@ -70,7 +70,6 @@ public class Main {
                 checkWhile(child, descriptor);
             } else if(child instanceof ASTMainDeclaration) {
                 checkMain(child, descriptor);
-
             }
         }
     }
@@ -78,6 +77,14 @@ public class Main {
     private void checkMain(Node node, Descriptor descriptor) {
         System.out.println(node);
 
+        Descriptor descriptor2 = classDeclaration.addMethod(node, node.toString());
+        //classDeclaration.getAllMethods().get("Main declaration").addParameter(node, "args");
+
+        if(node.jjtGetNumChildren() == 1) {
+            if(node.jjtGetChild(0) instanceof ASTMethodBody) {
+                createMethodBody(node.jjtGetChild(0), descriptor2);
+            }
+        }
     }
 
     private void checkIf(Node node, Descriptor descriptor) {
