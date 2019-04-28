@@ -414,13 +414,13 @@ public class Main {
                         for(Integer i = 0 ; i < simpleNodes[0].jjtGetChild(2).jjtGetNumChildren() ; i++) {
                             SimpleNode[] newChilds = new SimpleNode[1];
                             newChilds[0] = (SimpleNode)simpleNodes[0].jjtGetChild(2).jjtGetChild(i);
-                            VariableDeclaration var = (VariableDeclaration)method.getAllParameters().values().toArray()[i];
-                            if(((VariableDeclaration)method.getAllParameters().values().toArray()[i]).getType().equals("int")) {
-                                checkVariableInt(methodDeclaration, var, newChilds);
-                            } else if(((VariableDeclaration)method.getAllParameters().values().toArray()[i]).getType().equals("boolean")) {
-                                checkVariableBoolean(methodDeclaration, var, newChilds);
-                            } else if(((VariableDeclaration)method.getAllParameters().values().toArray()[i]).getType().equals("int[]")) {
-                                checkVariableIntArray(methodDeclaration, var, newChilds);
+                            VariableDeclaration var = (VariableDeclaration)method.getAllParameters().get(i);
+                            if(var.getType().equals("int")) {
+                                checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
+                            } else if(var.getType().equals("boolean")) {
+                                checkVariableBoolean(methodDeclaration, variableDeclaration, newChilds);
+                            } else if(var.getType().equals("int[]")) {
+                                checkVariableIntArray(methodDeclaration, variableDeclaration, newChilds);
                             }
                         }
                         variableDeclaration.setInitiated(true);                        
@@ -432,11 +432,12 @@ public class Main {
                     for(Integer i = 0 ; i < simpleNodes[0].jjtGetChild(2).jjtGetNumChildren() ; i++) {
                         SimpleNode[] newChilds = new SimpleNode[1];
                         newChilds[0] = (SimpleNode)simpleNodes[0].jjtGetChild(2).jjtGetChild(i);
-                        if(((VariableDeclaration)method.getAllParameters().values().toArray()[i]).getType().equals("int")) {
+                        VariableDeclaration var = (VariableDeclaration)method.getAllParameters().get(i);
+                        if(var.getType().equals("int")) {
                             checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
-                        } else if(((VariableDeclaration)method.getAllParameters().values().toArray()[i]).getType().equals("boolean")) {
+                        } else if(var.getType().equals("boolean")) {
                             checkVariableBoolean(methodDeclaration, variableDeclaration, newChilds);
-                        } else if(((VariableDeclaration)method.getAllParameters().values().toArray()[i]).getType().equals("int[]")) {
+                        } else if(var.getType().equals("int[]")) {
                             checkVariableIntArray(methodDeclaration, variableDeclaration, newChilds);
                         }
                     }
@@ -467,7 +468,7 @@ public class Main {
         VariableDeclaration variableDeclaration = null;
         if(name != null) {
             if(methodDeclaration.haveParameter(name)) {
-                variableDeclaration = methodDeclaration.getAllParameters().get(name);
+                variableDeclaration = methodDeclaration.getParameter(name);
             } else if(methodDeclaration.haveVariable(name)) {
                 variableDeclaration = methodDeclaration.getAllVariables().get(name);
             } else if(classDeclaration.haveVariable(name)) {

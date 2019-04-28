@@ -1,6 +1,7 @@
 
 package symboltable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import ast.ASTType;
@@ -10,7 +11,7 @@ import ast.SimpleNode;
 public class MethodDeclaration extends Descriptor {
     private boolean isStatic = false, isPublic = false;
     private HashMap<String, VariableDeclaration> allVariables;
-    private HashMap<String, VariableDeclaration> allParameters;
+    private ArrayList<VariableDeclaration> allParameters;
 
     private String type;
     private String name;
@@ -21,7 +22,7 @@ public class MethodDeclaration extends Descriptor {
         type = splitedName[0];
         this.name = splitedName[1];
         allVariables = new HashMap<>();
-        allParameters = new HashMap<>();
+        allParameters = new ArrayList<>();
     }
 
     public Boolean haveVariable(String name) {
@@ -43,7 +44,12 @@ public class MethodDeclaration extends Descriptor {
     }
 
     public Boolean haveParameter(String name) {
-        return allParameters.containsKey(name);
+        for(VariableDeclaration variableDeclaration : allParameters) {
+            if(variableDeclaration.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void addParameter(Node node, String name) {
@@ -53,11 +59,20 @@ public class MethodDeclaration extends Descriptor {
         } else {
             variableDeclaration = new VariableDeclaration(node, name, false);
         }
-        allParameters.put(variableDeclaration.getName(), variableDeclaration);
+        allParameters.add(variableDeclaration);
     }
 
-    public HashMap<String, VariableDeclaration> getAllParameters() {
+    public ArrayList<VariableDeclaration> getAllParameters() {
         return allParameters;
+    }
+
+    public VariableDeclaration getParameter(String name) {
+        for(VariableDeclaration variableDeclaration : allParameters) {
+            if(variableDeclaration.getName().equals(name)) {
+                return variableDeclaration;
+            }
+        }
+        return null;
     }
 
     @Override
