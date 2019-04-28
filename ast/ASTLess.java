@@ -6,6 +6,7 @@ package ast;
 public class ASTLess extends SimpleNode {
   public ASTLess(int id) {
     super(id);
+    this.op = MyConstants.LESS;
   }
 
   public ASTLess(Fac p, int id) {

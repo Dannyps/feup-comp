@@ -314,7 +314,7 @@ void Expression() #void : {}
         <DOT> Term()
         (
             {y=3;} <OPEN_PARENTHESES> (Expression() {x++;} (<VIRG> Expression() {x++;})*)? #Parenteses(x) <CLOSE_PARENTHESES>
-        )? #Dot(y)
+        )? #Dot(2)
     )?
 }
 
@@ -325,19 +325,31 @@ void Expression1() #void : {}
 
 void Expression2() #void : {} 
 {
+    {int x=0; int y=2;}
     Expression3() 
+    (
+        LOOKAHEAD(2) <DOT> Expression2()
+        (LOOKAHEAD(2)
+            {y=3;} <OPEN_PARENTHESES> (Expression() {x++;} (<VIRG> Expression() {x++;})*)? #Parenteses(x) <CLOSE_PARENTHESES>
+        )? #Dot(y)
+    )*
+}
+
+void Expression3() #void : {} 
+{
+    Expression4() 
     [
         <SUM> Expression3() #Add(2) | 
         <SUB> Expression3() #Sub(2)
     ]
 }
 
-void Expression3() #void : {} 
+void Expression4() #void : {} 
 {
     Term() 
     [
-        <MULT> Expression3() #Mult(2) | 
-        <DIV> Expression3() #Div(2)
+        <MULT> Expression4() #Mult(2) | 
+        <DIV> Expression4() #Div(2)
     ]
 }
 

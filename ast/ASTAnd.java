@@ -6,6 +6,7 @@ public
 class ASTAnd extends SimpleNode {
   public ASTAnd(int id) {
     super(id);
+    this.op = MyConstants.AND;
   }
 
   public ASTAnd(Fac p, int id) {

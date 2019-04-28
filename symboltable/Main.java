@@ -56,9 +56,81 @@ public class Main {
                 VariableDeclaration variableDeclaration = getVariable(methodDeclaration, array.str);
                 if(variableDeclaration.getIsArray() && (equal instanceof ASTEqual)) {
                     initiateArrayPosition(methodDeclaration, variableDeclaration, equal);
+                } else {
+                    initiateVariableWithArray(methodDeclaration, variableDeclaration, equal);
                 }
+            } else if(child instanceof ASTIf) {
+                checkIf(child, descriptor);
+            } else if(child instanceof ASTLess || child instanceof ASTAnd) {
+                MethodDeclaration methodDeclaration = (MethodDeclaration) descriptor;
+                SimpleNode[] simpleNodes = new SimpleNode[1];
+                simpleNodes[0] = (SimpleNode) child;
+                checkVariableBoolean(methodDeclaration, null, simpleNodes);
+            } else if(child instanceof ASTWhile) {
+                checkWhile(child, descriptor);
+            } else if(child instanceof ASTMainDeclaration) {
+                checkMain(child, descriptor);
+
             }
         }
+    }
+
+    private void checkMain(Node node, Descriptor descriptor) {
+        System.out.println(node);
+
+    }
+
+    private void checkIf(Node node, Descriptor descriptor) {
+        System.out.println(node);
+        if(node.jjtGetNumChildren() == 3) {
+            if(node.jjtGetChild(0) instanceof ASTIfCondition) {
+                checkIfCondition(node.jjtGetChild(0), descriptor);
+            }
+            if(node.jjtGetChild(1) instanceof ASTIfBody) {
+                checkIfBody(node.jjtGetChild(1), descriptor);
+            }
+            if(node.jjtGetChild(2) instanceof ASTElseBody) {
+                checkElseBody(node.jjtGetChild(2), descriptor);
+            }
+        }
+    }
+
+    private void checkIfCondition(Node node, Descriptor descriptor) {
+        System.out.println(node);
+        showChilds(node, descriptor);
+    }
+
+    private void checkIfBody(Node node, Descriptor descriptor) {
+        System.out.println(node);
+        showChilds(node, descriptor);
+    }
+
+    private void checkElseBody(Node node, Descriptor descriptor) {
+        System.out.println(node);
+        showChilds(node, descriptor);
+    }
+
+    private void checkWhile(Node node, Descriptor descriptor) {
+        System.out.println(node);
+
+        if(node.jjtGetNumChildren() == 2) {
+            if(node.jjtGetChild(0) instanceof ASTWhileCondition) {
+                checkWhileCondition(node.jjtGetChild(0), descriptor);
+            }
+            if(node.jjtGetChild(1) instanceof ASTWhileBody) {
+                checkWhileBody(node.jjtGetChild(1), descriptor);
+            }
+        }
+    }
+
+    private void checkWhileCondition(Node node, Descriptor descriptor) {
+        System.out.println(node);
+        showChilds(node, descriptor);
+    }
+
+    private void checkWhileBody(Node node, Descriptor descriptor) {
+        System.out.println(node);
+        showChilds(node, descriptor);
     }
 
     private void initiateArrayPosition(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration, SimpleNode equal) {
@@ -69,6 +141,21 @@ public class Main {
         checkVariableInt(methodDeclaration, variableDeclaration, position);
         checkVariableInt(methodDeclaration, variableDeclaration, value);
         System.out.println("position " + position[0].str + " of array " + variableDeclaration.getName() + " has been initialized with value " + value[0].str);
+    }
+
+    private void initiateVariableWithArray(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration, SimpleNode equal) {
+        SimpleNode[] array = new SimpleNode[1];
+        array[0] = (SimpleNode) equal.jjtGetChild(0);
+        SimpleNode[] position = new SimpleNode[1];
+        position[0] = (SimpleNode) equal.jjtGetChild(1);
+        if(variableDeclaration.getType().equals("int")) {
+            VariableDeclaration var = getVariable(methodDeclaration, array[0].str);
+            if(var.getInitiated()) {
+                checkVariableInt(methodDeclaration, var, position);
+                variableDeclaration.setInitiated(true);
+                System.out.println("Variable " + variableDeclaration.getName() + " has been assigned at position " + position[0].str + " of array " + var.getName());
+            }
+        }
     }
 
     private void checkArrayLength(Node node, Descriptor descriptor) {
@@ -143,10 +230,10 @@ public class Main {
         String typeAndName = splited[1];
         String name = typeAndName.split(" ")[1];     
         System.out.println("Found one parameter --> " + node);
-        System.out.println("Add variable " + node + " at " + descriptor);
         if(descriptor instanceof MethodDeclaration) {
             MethodDeclaration methodDeclaration = (MethodDeclaration) descriptor;
             if(!methodDeclaration.haveParameter(name)) {
+                System.out.println("Add variable " + node + " at " + descriptor);
                 methodDeclaration.addParameter(node, typeAndName);
             } else {
                 String errorMessage = methodDeclaration.getName() + " already have parameter with name " + name;
@@ -278,9 +365,11 @@ public class Main {
     }
 
     private void initiateVariable(Node node, Descriptor descriptor) {
-        System.out.println("Initiate one variable");
         MethodDeclaration methodDeclaration = (MethodDeclaration) descriptor;
         SimpleNode child = (SimpleNode)node.jjtGetChild(0);
+
+        System.out.println("Initiate one variable " + child.str);
+
 
         SimpleNode[] simpleNodes = new SimpleNode[1];
         simpleNodes[0] = (SimpleNode)node.jjtGetChild(1);
@@ -398,10 +487,24 @@ public class Main {
                 return;
             } catch(NumberFormatException e) {
                 if(simpleNodes[0].op >= 1 && simpleNodes[0].op <= 4) {
-                    System.out.println("Found sub operation " + MyConstants.ops[simpleNodes[0].op - 1]);
+                    System.out.println("Found sub operation " + MyConstants.ops[simpleNodes[0].op - 1]);                    
                     SimpleNode[] childs = new SimpleNode[2];
                     childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
                     childs[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
+
+                    if(childs[0] instanceof ASTTerm) {
+                        if(childs[0].jjtGetNumChildren() > 0) {
+                            if(childs[0].jjtGetChild(0) instanceof ASTParenteses) {
+                                childs[0] = ((SimpleNode)childs[0].jjtGetChild(0).jjtGetChild(0));
+                            }
+                        }
+                    }
+                    if(childs[1].jjtGetNumChildren() > 0) {
+                        childs[1] = (SimpleNode) childs[1].jjtGetChild(0);
+                    }
+                    if(childs[0].jjtGetNumChildren() > 0) {
+                        childs[0] = (SimpleNode) childs[0].jjtGetChild(0);
+                    }
                     checkVariableInt(methodDeclaration, variableDeclaration, childs);
                 } else if(simpleNodes[0] instanceof ASTDot) {
                     if(simpleNodes[0].jjtGetNumChildren() == 3) {
@@ -420,6 +523,12 @@ public class Main {
             SimpleNode[] childs = new SimpleNode[2];
             childs[0] = (SimpleNode) simpleNodes[0];
             childs[1] = (SimpleNode) simpleNodes[1];
+            if(childs[1].jjtGetNumChildren() > 0) {
+                childs[1] = (SimpleNode) childs[1].jjtGetChild(0);
+            }
+            if(childs[0].jjtGetNumChildren() > 0) {
+                childs[0] = (SimpleNode) childs[0].jjtGetChild(0);
+            }
             try {
                 Integer leftSideNumber = Integer.parseInt(childs[0].str);
                 try {
@@ -470,7 +579,6 @@ public class Main {
                         //variavel a esquerda
                         checkIfExistVariableAndYourType(methodDeclaration, childs[0].str, "int");
                     }
-
                     if(childs[1].op >= 1 && childs[1].op <= 4) {
                         SimpleNode[] newChilds = new SimpleNode[2];
                         newChilds[0] = (SimpleNode) childs[1].jjtGetChild(0);
@@ -489,8 +597,10 @@ public class Main {
     }
 
     private void checkVariableBoolean(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration, SimpleNode[] simpleNodes) {
+        System.out.println(simpleNodes.length);
+        
         if(simpleNodes.length == 1) {
-            if(simpleNodes[0].str.equals("true") || simpleNodes[0].str.equals("false")) {
+            if(simpleNodes[0].str != null && (simpleNodes[0].str.equals("true") || simpleNodes[0].str.equals("false"))) {
                 if(variableDeclaration != null) {
                     variableDeclaration.setInitiated(true);
                     return;
@@ -498,7 +608,7 @@ public class Main {
                     String errorMessage = "Is NULL";
                     showError(errorMessage);
                 }
-            } else if(simpleNodes[0].op.equals(MyConstants.LESS)) {
+            } else if(simpleNodes[0] instanceof ASTLess) {
                 System.out.println("Found sub operation " + MyConstants.ops[simpleNodes[0].op - 1]);
                 SimpleNode[] childs = new SimpleNode[2];
                 childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
@@ -560,6 +670,7 @@ public class Main {
                     newChilds[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
                     checkVariableBoolean(methodDeclaration, variableDeclaration, newChilds);
                 } else {
+                    System.out.println("------------------" + simpleNodes[0]);
                     checkIfExistVariableAndYourType(methodDeclaration, simpleNodes[0].str, "boolean");
                 }
 
@@ -594,6 +705,7 @@ public class Main {
                 String errorMessage = "Type of " + name + " is not " + type;
                 showError(errorMessage);
             }
+        } else if(methodDeclaration.haveParameter(name)) {
         } else if(classDeclaration.haveVariable(name)) {
             if(classDeclaration.getAllVariables().get(name).getType().equals(type)) {
                 classDeclaration.getAllVariables().get(name).setInitiated(true);                
