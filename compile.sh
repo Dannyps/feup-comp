@@ -22,8 +22,8 @@ cd ..
 mkdir -p bin
 
 # Compile generated java code
-javac -d bin/ ast/*.java || read
-javac -d bin/ symboltable/*.java || read
+javac -g -d bin/ ast/*.java || read
+javac -g -d bin/ symboltable/*.java || read
 
 read -p "Press any key to continue..."
 clear
