@@ -17,6 +17,7 @@ public class Jasmin {
 
     private FileWriter f = null;
     private ClassDeclaration c = null;
+    private int identLevel = 0;
 
     private Path outputDir = Paths.get("output");
 
@@ -29,16 +30,20 @@ public class Jasmin {
         this.toFile("");
         this.toFile(".method static public <clinit>()V");
 
+        // variables, methods, and stuff
+
+        this.toFile("return");
+        this.toFile(".end method");
         this.closeFile();
         return;
     }
 
     private boolean openFile(String cname) {
         try {
-            if(!Files.exists(this.outputDir)){
+            if (!Files.exists(this.outputDir)) {
                 Files.createDirectories(this.outputDir);
             }
-            this.f = new FileWriter("output" + File.separator +  cname + ".j");
+            this.f = new FileWriter("output" + File.separator + cname + ".j");
             return true;
         } catch (Exception e) {
             return false;
@@ -56,7 +61,13 @@ public class Jasmin {
     private void toFile(String s) {
         if (this.f != null) {
             try {
-                f.write(s + "\n");
+                if (s.startsWith(".end method")) {
+                    this.identLevel--;
+                }
+                f.write("\t".repeat(this.identLevel) + s + "\n");
+                if (s.startsWith(".method")) {
+                    this.identLevel++;
+                }
             } catch (Exception e) {
             }
         } else {
