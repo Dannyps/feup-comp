@@ -114,7 +114,7 @@ public class Jasmin {
             Node value = nn.jjtGetChild(1);
             if (value instanceof ASTTerm) {
                 processNode(vars, value);
-            } else if (value instanceof ASTAdd) {
+            } else { // it must be processed
                 processNode(vars, value);
             }
 
@@ -124,7 +124,16 @@ public class Jasmin {
             processNode(vars, nn.jjtGetChild(0));  // 1st param
             processNode(vars, nn.jjtGetChild(1));  // 2nd param
             toFile("iadd");
-
+        } else if(node instanceof ASTMult){
+            ASTMult nn = (ASTMult) node;
+            processNode(vars, nn.jjtGetChild(0));  // 1st param
+            processNode(vars, nn.jjtGetChild(1));  // 2nd param
+            toFile("imul");
+        } else if(node instanceof ASTDiv){
+            ASTDiv nn = (ASTDiv) node;
+            processNode(vars, nn.jjtGetChild(0));  // 1st param
+            processNode(vars, nn.jjtGetChild(1));  // 2nd param
+            toFile("idiv");
         }
     }
 
