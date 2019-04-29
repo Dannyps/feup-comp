@@ -16,6 +16,13 @@ public class Main {
 
     }
 
+    /**
+     * @return the classDeclaration
+     */
+    public ClassDeclaration getClassDeclaration() {
+        return classDeclaration;
+    }
+
     public void checkErrors() {
         System.out.println("\n\n----------Starting Checking Erros----------\n");
         for(int i = 0 ; i < root.jjtGetNumChildren() ; i++) {
