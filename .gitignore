@@ -4,3 +4,5 @@
 ast/
 # ignore the folder containing the class files
 bin/
+# ignore generated files
+output/

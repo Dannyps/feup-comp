@@ -1,0 +1,12 @@
+class Arithm {
+
+    public static void main (String[] args) {
+        int x;
+        int y;
+        int z;
+
+        z = 4;
+        y = 6;
+        x = z + y; 
+    }    
+}

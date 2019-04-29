@@ -32,9 +32,10 @@ public class Fac {
     
             root.dump("");
 
-            Main main = new Main(root);
-            main.checkErrors();
-            main.createSymbolTable();
+            Main m = new Main(root);
+            m.checkErrors();
+            m.createSymbolTable();
+            Jasmin j = new Jasmin(m);
     
             System.exit(0);
             

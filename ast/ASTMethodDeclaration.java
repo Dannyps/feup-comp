@@ -2,10 +2,9 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=false,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package ast;
 
-public
-class ASTMethodDeclaration extends SimpleNode {
-  protected String identifier="";
-  
+public class ASTMethodDeclaration extends SimpleNode {
+  protected String identifier = "";
+
   public ASTMethodDeclaration(int id) {
     super(id);
   }
@@ -20,5 +19,12 @@ class ASTMethodDeclaration extends SimpleNode {
     return "Method declaration:" + returnType.getDataType() + " " + this.identifier + "()";
   }
 
+  public String getReturnType() {
+    return ((ASTType) this.jjtGetChild(0)).getDataType();
+  }
+
 }
-/* JavaCC - OriginalChecksum=4912f1b196fd7ee9c2f16f68305c40c7 (do not edit this line) */
+/*
+ * JavaCC - OriginalChecksum=4912f1b196fd7ee9c2f16f68305c40c7 (do not edit this
+ * line)
+ */

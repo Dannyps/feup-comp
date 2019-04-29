@@ -21,5 +21,12 @@ class ASTMainDeclaration extends SimpleNode {
   public String toString() {
     return "Main declaration (parameter: String[] " + this.param + " )";
   }
+
+  /**
+   * @return the param
+   */
+  public String getParam() {
+    return param;
+  }
 }
 /* JavaCC - OriginalChecksum=e91110d734329b1d3518e160eb3c27d8 (do not edit this line) */
