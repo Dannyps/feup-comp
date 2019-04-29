@@ -7,6 +7,7 @@ import java.util.HashMap;
 import ast.ASTMethodDeclaration;
 import ast.ASTType;
 import ast.Node;
+import ast.ASTMainDeclaration;
 
 public class MethodDeclaration extends Descriptor {
     private boolean isStatic = false, isPublic = false;
@@ -22,10 +23,18 @@ public class MethodDeclaration extends Descriptor {
         super(node, DescriptorType.METHOD);
         String[] splitedName = name.split(" ");
         type = splitedName[0];
-        this.name = splitedName[1];
+        if (name.contains("Main declaration")) {
+            this.name = "main()";
+        } else {
+            this.name = splitedName[1];
+        }
         allVariables = new HashMap<>();
         allParameters = new ArrayList<>();
-        this.returnType = ((ASTMethodDeclaration) node).getReturnType();
+        if (node instanceof ASTMainDeclaration) { // main always returns void
+            this.returnType = "void";
+        } else {
+            this.returnType = ((ASTMethodDeclaration) node).getReturnType();
+        }
     }
 
     public Boolean haveVariable(String name) {
@@ -34,8 +43,8 @@ public class MethodDeclaration extends Descriptor {
 
     public void addVariable(Node node, String name) {
         VariableDeclaration variableDeclaration = null;
-        if(node.jjtGetChild(0) instanceof ASTType) {
-            variableDeclaration = new VariableDeclaration(node, name, ((ASTType)node.jjtGetChild(0)).isArray);
+        if (node.jjtGetChild(0) instanceof ASTType) {
+            variableDeclaration = new VariableDeclaration(node, name, ((ASTType) node.jjtGetChild(0)).isArray);
         } else {
             variableDeclaration = new VariableDeclaration(node, name, false);
         }
@@ -47,8 +56,8 @@ public class MethodDeclaration extends Descriptor {
     }
 
     public Boolean haveParameter(String name) {
-        for(VariableDeclaration variableDeclaration : allParameters) {
-            if(variableDeclaration.getName().equals(name)) {
+        for (VariableDeclaration variableDeclaration : allParameters) {
+            if (variableDeclaration.getName().equals(name)) {
                 return true;
             }
         }
@@ -57,8 +66,8 @@ public class MethodDeclaration extends Descriptor {
 
     public void addParameter(Node node, String name) {
         VariableDeclaration variableDeclaration = null;
-        if(node.jjtGetChild(0) instanceof ASTType) {
-            variableDeclaration = new VariableDeclaration(node, name, ((ASTType)node.jjtGetChild(0)).isArray);
+        if (node.jjtGetChild(0) instanceof ASTType) {
+            variableDeclaration = new VariableDeclaration(node, name, ((ASTType) node.jjtGetChild(0)).isArray);
         } else {
             variableDeclaration = new VariableDeclaration(node, name, false);
         }
@@ -70,15 +79,13 @@ public class MethodDeclaration extends Descriptor {
     }
 
     public VariableDeclaration getParameter(String name) {
-        for(VariableDeclaration variableDeclaration : allParameters) {
-            if(variableDeclaration.getName().equals(name)) {
+        for (VariableDeclaration variableDeclaration : allParameters) {
+            if (variableDeclaration.getName().equals(name)) {
                 return variableDeclaration;
             }
         }
         return null;
     }
-
-    
 
     @Override
     public String getName() {

@@ -112,6 +112,10 @@ public class SimpleNode implements Node {
   public int getId() {
     return id;
   }
+
+  public String getStr(){
+    return str;
+  }
 }
 
 /*

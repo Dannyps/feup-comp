@@ -22,5 +22,12 @@ class ASTVarDeclaration extends SimpleNode {
       return "error";
     }
   }
+
+  /**
+   * @return the identifier
+   */
+  public String getIdentifier() {
+    return identifier;
+  }
 }
 /* JavaCC - OriginalChecksum=4f9d28789843add7285899d7229c7afa (do not edit this line) */
