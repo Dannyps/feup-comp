@@ -28,14 +28,96 @@ public class Jasmin {
         this.toFile(".class public " + className);
         this.toFile(".super java/lang/Object");
         this.toFile("");
-        this.toFile(".method static public <clinit>()V");
+
+        this.makeSummary();
+
+        this.c.getAllMethods().forEach((k, v) -> {
+            String methodLine = ".method public"; // all methods are public in Java--
+
+            if (k == " main") { // only the main method is static in Java--
+                methodLine += " static";
+            }
+
+            methodLine += " " + k.substring(0, k.length() - 2); // the method name without parentheses
+
+            methodLine += "()"; // TODO args
+
+            try {
+                methodLine += getSignature(v.getReturnType());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            this.toFile(methodLine);
+
+            this.toFile(".limit stack 0");
+            this.toFile("return");
+            this.toFile(".end method");
+        });
 
         // variables, methods, and stuff
-
-        this.toFile("return");
-        this.toFile(".end method");
         this.closeFile();
         return;
+    }
+
+    private static String getSignature(String returnType) throws Exception {
+        String ret;
+        switch (returnType) {
+        case "boolean":
+            ret = "Z";
+            break;
+        case "byte":
+            ret = "B";
+            break;
+        case "char":
+            ret = "C";
+            break;
+        case "short":
+            ret = "S";
+            break;
+        case "int":
+            ret = "I";
+            break;
+        case "long":
+            ret = "J";
+            break;
+        case "flat":
+            ret = "F";
+            break;
+        case "double":
+            ret = "D";
+            break;
+        case "void":
+            ret = "V";
+            break;
+        default:
+            if (returnType.substring(returnType.length() - 2).equals("[]")) {
+                // this is an array type
+                return "[" + getSignature(returnType.substring(0, returnType.length() - 2));
+            }else{
+                // TODO might be a Fully qualiffied class name
+                return "L";
+            }
+            //throw new Exception("The passed returnType is not valid! Got " + returnType);
+        }
+
+        return ret;
+    }
+
+    private void makeSummary() {
+        System.out.println("Class has " + this.c.getAllVariables().size() + " variables.");
+        System.out.println("Class has " + this.c.getAllMethods().size() + " methods.");
+
+        this.c.getAllMethods().forEach((k, v) -> {
+            System.out.println("    Method " + k + " has " + v.getAllParameters().size() + " params:");
+            v.getAllParameters().forEach((param) -> {
+                System.out.println("        - " + param);
+            });
+            System.out.println("    Method " + k + " has " + v.getAllVariables().size() + " variables:");
+            v.getAllVariables().forEach((k1, v1) -> {
+                System.out.println("        - " + v1);
+            });
+        });
     }
 
     private boolean openFile(String cname) {

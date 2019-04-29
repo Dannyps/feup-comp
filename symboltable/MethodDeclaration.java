@@ -4,9 +4,9 @@ package symboltable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import ast.ASTMethodDeclaration;
 import ast.ASTType;
 import ast.Node;
-import ast.SimpleNode;
 
 public class MethodDeclaration extends Descriptor {
     private boolean isStatic = false, isPublic = false;
@@ -16,6 +16,8 @@ public class MethodDeclaration extends Descriptor {
     private String type;
     private String name;
 
+    private String returnType;
+
     public MethodDeclaration(Node node, String name) {
         super(node, DescriptorType.METHOD);
         String[] splitedName = name.split(" ");
@@ -23,6 +25,7 @@ public class MethodDeclaration extends Descriptor {
         this.name = splitedName[1];
         allVariables = new HashMap<>();
         allParameters = new ArrayList<>();
+        this.returnType = ((ASTMethodDeclaration) node).getReturnType();
     }
 
     public Boolean haveVariable(String name) {
@@ -84,5 +87,12 @@ public class MethodDeclaration extends Descriptor {
 
     public String getType() {
         return type;
+    }
+
+    /**
+     * @return the returnType
+     */
+    public String getReturnType() {
+        return returnType;
     }
 }
