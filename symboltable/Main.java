@@ -26,6 +26,38 @@ public class Main {
         }
     }
 
+    public void createSymbolTable() {
+        System.out.println("\n\n----------Starting creating symbol table----------\n");
+        System.out.println(classDeclaration);
+        showPrefix(1);
+        System.out.println("METHODS of class " + classDeclaration.getName());
+
+        for(MethodDeclaration method : classDeclaration.getAllMethods().values()) {
+            showPrefix(2);
+            System.out.println(method.getType() + " | " + method.getName());
+
+            showPrefix(3);
+            System.out.println("Parameters of " + method.getName());
+            for(VariableDeclaration parameter : method.getAllParameters()) {
+                showPrefix(3);
+                System.out.println(parameter.getType() + " | " + method.getName());
+            }
+            System.out.println();
+            showPrefix(3);
+            System.out.println("Variables of " + method.getName());
+            for(VariableDeclaration variable : method.getAllParameters()) {
+                showPrefix(3);
+                System.out.println(variable.getType() + " | " + method.getName());
+            }
+        }
+    }
+
+    private void showPrefix(Integer number) {
+        for(Integer i = 0 ; i < number ; i++) {
+            System.out.print("\t");
+        }
+    }
+
     private void showChilds(Node node, Descriptor descriptor) {
         for(int i = 0 ; i < node.jjtGetNumChildren() ; i++) {
             Node child = node.jjtGetChild(i);
