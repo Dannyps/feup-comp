@@ -40,14 +40,14 @@ public class Main {
             System.out.println("Parameters of " + method.getName());
             for(VariableDeclaration parameter : method.getAllParameters()) {
                 showPrefix(3);
-                System.out.println(parameter.getType() + " | " + method.getName());
+                System.out.println(parameter.getType() + " | " + parameter.getName());
             }
             System.out.println();
             showPrefix(3);
             System.out.println("Variables of " + method.getName());
-            for(VariableDeclaration variable : method.getAllParameters()) {
+            for(VariableDeclaration variable : method.getAllVariables().values()) {
                 showPrefix(3);
-                System.out.println(variable.getType() + " | " + method.getName());
+                System.out.println(variable.getType() + " | " + variable.getName());
             }
         }
     }
@@ -109,7 +109,7 @@ public class Main {
     private void checkMain(Node node, Descriptor descriptor) {
         System.out.println(node);
 
-        Descriptor descriptor2 = classDeclaration.addMethod(node, node.toString());
+        Descriptor descriptor2 = classDeclaration.addMethod(node, "void " + node.toString());
         //classDeclaration.getAllMethods().get("Main declaration").addParameter(node, "args");
 
         if(node.jjtGetNumChildren() == 1) {
