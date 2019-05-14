@@ -116,8 +116,8 @@ public class Main {
         System.out.println(node);
 
         Descriptor descriptor2 = classDeclaration.addMethod(node, "void " + node.toString());
-        // classDeclaration.getAllMethods().get("Main declaration").addParameter(node,
-        // "args");
+        classDeclaration.getAllMethods().
+        get("main()").addParameter(node, node.toString().split(" ")[3].split(":")[1] + " " + node.toString().split(" ")[4]);
 
         if (node.jjtGetNumChildren() == 1) {
             if (node.jjtGetChild(0) instanceof ASTMethodBody) {

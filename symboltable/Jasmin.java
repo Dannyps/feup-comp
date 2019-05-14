@@ -71,15 +71,19 @@ public class Jasmin {
         this.toFile("");
 
         Node methodBody = v.getNode().jjtGetChild(0);
+        System.out.println("Metod body ----> " + methodBody.toString());
 
         int n = methodBody.jjtGetNumChildren();
+
+        System.out.println(n);
+        System.out.println("--------------------------");
 
         v.getAllParameters().forEach((param) -> {
             vars.put(param.getName(), vars.size());
         });
         for (int i = 0; i < n; i++) {
             Node node = methodBody.jjtGetChild(i);
-            processNode(vars, node);
+            processNode(v, vars, node);
         }
 
         this.toFile("");
@@ -88,7 +92,8 @@ public class Jasmin {
         this.toFile("");
     }
 
-    private void processNode(HashMap<String, Integer> vars, Node node) {
+    private void processNode(MethodDeclaration m, HashMap<String, Integer> vars, Node node) {
+        System.out.println(node);
         if (node instanceof ASTVarDeclaration) {
             ASTVarDeclaration nn = (ASTVarDeclaration) node;
             vars.put(nn.getIdentifier(), vars.size());
@@ -113,28 +118,64 @@ public class Jasmin {
             Node dest = nn.jjtGetChild(0);
             Node value = nn.jjtGetChild(1);
             if (value instanceof ASTTerm) {
-                processNode(vars, value);
+                processNode(m, vars, value);
             } else { // it must be processed
-                processNode(vars, value);
+                processNode(m, vars, value);
             }
 
             toFile("istore " + vars.get(((ASTTerm) dest).getStr()));
         } else if(node instanceof ASTAdd){
             ASTAdd nn = (ASTAdd) node;
-            processNode(vars, nn.jjtGetChild(0));  // 1st param
-            processNode(vars, nn.jjtGetChild(1));  // 2nd param
+            processNode(m, vars, nn.jjtGetChild(0));  // 1st param
+            processNode(m, vars, nn.jjtGetChild(1));  // 2nd param
             toFile("iadd");
         } else if(node instanceof ASTMult){
             ASTMult nn = (ASTMult) node;
-            processNode(vars, nn.jjtGetChild(0));  // 1st param
-            processNode(vars, nn.jjtGetChild(1));  // 2nd param
+            processNode(m, vars, nn.jjtGetChild(0));  // 1st param
+            processNode(m, vars, nn.jjtGetChild(1));  // 2nd param
             toFile("imul");
         } else if(node instanceof ASTDiv){
             ASTDiv nn = (ASTDiv) node;
-            processNode(vars, nn.jjtGetChild(0));  // 1st param
-            processNode(vars, nn.jjtGetChild(1));  // 2nd param
+            processNode(m, vars, nn.jjtGetChild(0));  // 1st param
+            processNode(m, vars, nn.jjtGetChild(1));  // 2nd param
             toFile("idiv");
+        } else if(node instanceof ASTIf) {
+            processIf(m, vars, node);
         }
+    }
+
+    private void processIf(MethodDeclaration m, HashMap<String, Integer> vars, Node node) {
+        Node ifCondition = node.jjtGetChild(0);
+        Node ifBody = node.jjtGetChild(1);
+        Node elseBody = node.jjtGetChild(2);
+
+        System.out.println("--------------------------------------------------------");
+        System.out.println(ifCondition);
+        System.out.println(ifBody);
+        System.out.println(elseBody);
+
+        if(ifCondition.jjtGetChild(0) instanceof ASTLess) {
+            ASTLess less = (ASTLess) ifCondition.jjtGetChild(0);
+            processNode(m, vars, less.jjtGetChild(0));
+            processNode(m, vars, less.jjtGetChild(1));
+            toFile("if_icmplt");
+            toFile("jsr " + "ifBody");
+            toFile("jsr " + "elseBody");
+            toFile("ifBody:");
+            for(int i = 0 ; i < ifBody.jjtGetNumChildren() ; i++) {
+                processNode(m, vars, ifBody.jjtGetChild(i));
+            }
+            toFile("elseBody:");
+            for(int i = 0 ; i < elseBody.jjtGetNumChildren() ; i++) {
+                processNode(m, vars, ifBody.jjtGetChild(i));
+            }
+
+
+
+        }
+
+
+
     }
 
     private static String getSignature(String returnType) throws Exception {
