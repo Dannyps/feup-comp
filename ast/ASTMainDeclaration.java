@@ -19,7 +19,7 @@ class ASTMainDeclaration extends SimpleNode {
   
   @Override
   public String toString() {
-    return "Main declaration (parameter: String[] " + this.param + " )";
+    return "Main declaration ( parameter:String[] " + this.param + " )";
   }
 
   /**
