@@ -28,6 +28,7 @@ public class Jasmin {
 
     private HashMap<String, Integer> getVars(String method) {
         this.defaultMethod = method;
+        //System.out.println("defaultMethod set: "+ method);
         return vars.get(method);
     }
 
@@ -40,6 +41,8 @@ public class Jasmin {
 
     void addMethodToVars(String method) {
         vars.put(method, new HashMap<String, Integer>());
+        this.defaultMethod = method;
+        //System.out.println("added method " + method + " to vars");
     }
 
     public Jasmin(Main m) {
@@ -71,13 +74,12 @@ public class Jasmin {
      */
     private void writeMethod(String methodName, MethodDeclaration v) {
         this.addMethodToVars(methodName);
-        HashMap<String, Integer> vars = new HashMap<String, Integer>();
         String methodLine = ".method public"; // all methods are public in Java--
 
         if (methodName == "main()") { // only the main method is static in Java--
             methodLine += " static main([Ljava/lang/String;)V";
             ASTMainDeclaration m = (ASTMainDeclaration) v.getNode();
-            vars.put(m.getParam(), vars.size());
+            this.getVars(methodName).put(m.getParam(), vars.size());
         } else {
             // regular method
 
@@ -96,7 +98,8 @@ public class Jasmin {
         this.toFile(".limit locals " + v.getAllVariables().size() + v.getAllParameters().size());
         this.toFile("");
 
-        Node methodBody = v.getNode().jjtGetChild(0);
+        Node methodBody = getMethodBody(v);
+
         System.out.println("Metod body ----> " + methodBody.toString());
 
         int n = methodBody.jjtGetNumChildren();
@@ -122,6 +125,16 @@ public class Jasmin {
         this.toFile("");
     }
 
+    private Node getMethodBody(MethodDeclaration v) {
+        Node methodBody = null;
+        int i = 0;
+        while (!(methodBody instanceof ASTMethodBody)) {
+            methodBody = v.getNode().jjtGetChild(i++);
+        }
+        System.out.println("method body index: " + i);
+        return methodBody;
+    }
+
     /**
      * @brief Recursive function that takes care of a node. Will call itself for
      *        child nodes.
@@ -144,7 +157,10 @@ public class Jasmin {
                 if (vars.containsKey(str)) {
                     // it is a variable and was found
                     toFile("iload " + vars.get(str));
-                } else {
+                } else if(str == "null"){
+                    // TODO we got a null
+                    toFile("iload 0");
+                }else{
                     // this should not happen
                     System.err.println("An ASTTerm could not be parsed as a variable nor as an integer: " + str);
                     System.exit(-2);
