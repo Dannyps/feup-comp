@@ -23,7 +23,27 @@ public class Jasmin {
 
     private Path outputDir = Paths.get("output");
 
+    private HashMap<String, HashMap<String, Integer>> vars;
+    private String defaultMethod = null;
+
+    private HashMap<String, Integer> getVars(String method) {
+        this.defaultMethod = method;
+        return vars.get(method);
+    }
+
+    private HashMap<String, Integer> getVars() throws Exception {
+        if (this.defaultMethod != null) {
+            return vars.get(this.defaultMethod);
+        } else
+            throw new Exception("the defaultMethod is not set.");
+    }
+
+    void addMethodToVars(String method) {
+        vars.put(method, new HashMap<String, Integer>());
+    }
+
     public Jasmin(Main m) {
+        this.vars = new HashMap<String, HashMap<String, Integer>>();
         this.c = m.getClassDeclaration();
         String className = this.c.getName();
         this.openFile(className);
@@ -44,18 +64,24 @@ public class Jasmin {
         return;
     }
 
-    private void writeMethod(String k, MethodDeclaration v) {
+    /**
+     * @brief Writes the revelant instructions to the file regarding this method.
+     * @param methodName the name of the method
+     * @param v          the methodDeclaration
+     */
+    private void writeMethod(String methodName, MethodDeclaration v) {
+        this.addMethodToVars(methodName);
         HashMap<String, Integer> vars = new HashMap<String, Integer>();
         String methodLine = ".method public"; // all methods are public in Java--
 
-        if (k == "main()") { // only the main method is static in Java--
+        if (methodName == "main()") { // only the main method is static in Java--
             methodLine += " static main([Ljava/lang/String;)V";
             ASTMainDeclaration m = (ASTMainDeclaration) v.getNode();
             vars.put(m.getParam(), vars.size());
         } else {
             // regular method
 
-            methodLine += " " + k.substring(0, k.length() - 2); // the method name without parentheses
+            methodLine += " " + methodName.substring(0, methodName.length() - 2); // the method name without parentheses
             methodLine += "()"; // TODO args
 
             try {
@@ -79,11 +105,15 @@ public class Jasmin {
         System.out.println("--------------------------");
 
         v.getAllParameters().forEach((param) -> {
-            vars.put(param.getName(), vars.size());
+            this.getVars(methodName).put(param.getName(), vars.size());
         });
         for (int i = 0; i < n; i++) {
             Node node = methodBody.jjtGetChild(i);
-            processNode(v, vars, node);
+            try {
+                processNode(node);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         this.toFile("");
@@ -92,59 +122,66 @@ public class Jasmin {
         this.toFile("");
     }
 
-    private void processNode(MethodDeclaration m, HashMap<String, Integer> vars, Node node) {
-        System.out.println(node);
+    /**
+     * @brief Recursive function that takes care of a node. Will call itself for
+     *        child nodes.
+     * 
+     * @param vars the variables for this method
+     * @param node the node currently under analysis
+     * @throws Exception
+     */
+    private void processNode(Node node) throws Exception {
         if (node instanceof ASTVarDeclaration) {
             ASTVarDeclaration nn = (ASTVarDeclaration) node;
-            vars.put(nn.getIdentifier(), vars.size());
+            this.getVars().put(nn.getIdentifier(), vars.size()); // store variable in the vars hashmap
         } else if (node instanceof ASTTerm) {
             String str = ((ASTTerm) node).getStr();
-                try {
-                    Integer val = Integer.parseInt(str);
-                    toFile("ldc " + val);
-                } catch (Exception e) {
-                    // parsing as int failed. this must be a variable
-                    if (vars.containsKey(str)) {
-                        // it is a variable and was found
-                        toFile("iload " + vars.get(str));
-                    } else {
-                        // this should not happen
-                        System.err.println("An ASTTerm could not be parsed as a variable nor as an integer: " + str);
-                        System.exit(-2);
-                    }
+            try {
+                Integer val = Integer.parseInt(str);
+                toFile("ldc " + val);
+            } catch (Exception e) {
+                // parsing as int failed. this must be a variable
+                if (vars.containsKey(str)) {
+                    // it is a variable and was found
+                    toFile("iload " + vars.get(str));
+                } else {
+                    // this should not happen
+                    System.err.println("An ASTTerm could not be parsed as a variable nor as an integer: " + str);
+                    System.exit(-2);
                 }
+            }
         } else if (node instanceof ASTEqual) {
             ASTEqual nn = (ASTEqual) node;
             Node dest = nn.jjtGetChild(0);
             Node value = nn.jjtGetChild(1);
             if (value instanceof ASTTerm) {
-                processNode(m, vars, value);
+                processNode(value);
             } else { // it must be processed
-                processNode(m, vars, value);
+                processNode(value);
             }
 
             toFile("istore " + vars.get(((ASTTerm) dest).getStr()));
-        } else if(node instanceof ASTAdd){
+        } else if (node instanceof ASTAdd) {
             ASTAdd nn = (ASTAdd) node;
-            processNode(m, vars, nn.jjtGetChild(0));  // 1st param
-            processNode(m, vars, nn.jjtGetChild(1));  // 2nd param
+            processNode(nn.jjtGetChild(0)); // 1st param
+            processNode(nn.jjtGetChild(1)); // 2nd param
             toFile("iadd");
-        } else if(node instanceof ASTMult){
+        } else if (node instanceof ASTMult) {
             ASTMult nn = (ASTMult) node;
-            processNode(m, vars, nn.jjtGetChild(0));  // 1st param
-            processNode(m, vars, nn.jjtGetChild(1));  // 2nd param
+            processNode(nn.jjtGetChild(0)); // 1st param
+            processNode(nn.jjtGetChild(1)); // 2nd param
             toFile("imul");
-        } else if(node instanceof ASTDiv){
+        } else if (node instanceof ASTDiv) {
             ASTDiv nn = (ASTDiv) node;
-            processNode(m, vars, nn.jjtGetChild(0));  // 1st param
-            processNode(m, vars, nn.jjtGetChild(1));  // 2nd param
+            processNode(nn.jjtGetChild(0)); // 1st param
+            processNode(nn.jjtGetChild(1)); // 2nd param
             toFile("idiv");
-        } else if(node instanceof ASTIf) {
-            processIf(m, vars, node);
+        } else if (node instanceof ASTIf) {
+            processIf((ASTIf) node);
         }
     }
 
-    private void processIf(MethodDeclaration m, HashMap<String, Integer> vars, Node node) {
+    private void processIf(ASTIf node) throws Exception {
         Node ifCondition = node.jjtGetChild(0);
         Node ifBody = node.jjtGetChild(1);
         Node elseBody = node.jjtGetChild(2);
@@ -156,27 +193,22 @@ public class Jasmin {
 
         if(ifCondition.jjtGetChild(0) instanceof ASTLess) {
             ASTLess less = (ASTLess) ifCondition.jjtGetChild(0);
-            processNode(m, vars, less.jjtGetChild(0));
-            processNode(m, vars, less.jjtGetChild(1));
+            processNode(less.jjtGetChild(0));
+            processNode(less.jjtGetChild(1));
             toFile("if_icmplt");
             toFile("jsr " + "ifBody");
             toFile("jsr " + "elseBody");
             toFile("ifBody:");
             for(int i = 0 ; i < ifBody.jjtGetNumChildren() ; i++) {
-                processNode(m, vars, ifBody.jjtGetChild(i));
+                processNode(ifBody.jjtGetChild(i));
             }
             toFile("elseBody:");
             for(int i = 0 ; i < elseBody.jjtGetNumChildren() ; i++) {
-                processNode(m, vars, ifBody.jjtGetChild(i));
+                processNode(ifBody.jjtGetChild(i));
             }
-
-
-
         }
-
-
-
     }
+
 
     private static String getSignature(String returnType) throws Exception {
         String ret;
