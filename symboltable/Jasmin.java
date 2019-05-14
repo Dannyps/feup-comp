@@ -161,9 +161,16 @@ public class Jasmin {
             toFile("if_icmplt");
             toFile("jsr " + "ifBody");
             toFile("jsr " + "elseBody");
+            toFile("ifBody:");
             for(int i = 0 ; i < ifBody.jjtGetNumChildren() ; i++) {
                 processNode(m, vars, ifBody.jjtGetChild(i));
             }
+            toFile("elseBody:");
+            for(int i = 0 ; i < elseBody.jjtGetNumChildren() ; i++) {
+                processNode(m, vars, ifBody.jjtGetChild(i));
+            }
+
+
 
         }
 
