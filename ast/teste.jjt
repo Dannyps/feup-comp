@@ -35,7 +35,7 @@ public class Fac {
             Main m = new Main(root);
             m.checkErrors();
             m.createSymbolTable();
-            Jasmin j = new Jasmin(m);
+            //Jasmin j = new Jasmin(m);
     
             System.exit(0);
             

@@ -8,14 +8,17 @@ public class VariableDeclaration extends Descriptor {
     private Boolean initiated;
     private Boolean isArray;
     private Integer arrayLength;
+    private Integer value;
+    private Integer index;
 
-    VariableDeclaration(Node node, String name, Boolean isArray) {
+    VariableDeclaration(Node node, String name, Boolean isArray, Integer index) {
         super(node, DescriptorType.VARIABLE_DECLARATION);
         String[] splitedName = name.split(" ");
         type = splitedName[0];
         this.name = splitedName[1];
         this.initiated = false;
         this.isArray = isArray;
+        this.index = index;
     }
 
     @Override
@@ -46,5 +49,13 @@ public class VariableDeclaration extends Descriptor {
 
     public Integer getArrayLength() {
         return arrayLength;
+    }
+
+    public void setIndex(Integer index) {
+        this.index = index;
+    }
+
+    public Integer getIndex() {
+        return index;
     }
 }

@@ -19,6 +19,8 @@ public class MethodDeclaration extends Descriptor {
 
     private String returnType;
 
+    private Boolean writedLocals;
+
     public MethodDeclaration(Node node, String name) {
         super(node, DescriptorType.METHOD);
         String[] splitedName = name.split(" ");
@@ -35,6 +37,7 @@ public class MethodDeclaration extends Descriptor {
         } else {
             this.returnType = ((ASTMethodDeclaration) node).getReturnType();
         }
+        this.writedLocals = true;
     }
 
     public Boolean haveVariable(String name) {
@@ -44,9 +47,9 @@ public class MethodDeclaration extends Descriptor {
     public void addVariable(Node node, String name) {
         VariableDeclaration variableDeclaration = null;
         if (node.jjtGetChild(0) instanceof ASTType) {
-            variableDeclaration = new VariableDeclaration(node, name, ((ASTType) node.jjtGetChild(0)).isArray);
+            variableDeclaration = new VariableDeclaration(node, name, ((ASTType) node.jjtGetChild(0)).isArray, allVariables.size());
         } else {
-            variableDeclaration = new VariableDeclaration(node, name, false);
+            variableDeclaration = new VariableDeclaration(node, name, false, allVariables.size());
         }
         allVariables.put(variableDeclaration.getName(), variableDeclaration);
     }
@@ -67,9 +70,9 @@ public class MethodDeclaration extends Descriptor {
     public void addParameter(Node node, String name) {
         VariableDeclaration variableDeclaration = null;
         if (node.jjtGetChild(0) instanceof ASTType) {
-            variableDeclaration = new VariableDeclaration(node, name, ((ASTType) node.jjtGetChild(0)).isArray);
+            variableDeclaration = new VariableDeclaration(node, name, ((ASTType) node.jjtGetChild(0)).isArray, allParameters.size());
         } else {
-            variableDeclaration = new VariableDeclaration(node, name, false);
+            variableDeclaration = new VariableDeclaration(node, name, false, allParameters.size());
         }
         allParameters.add(variableDeclaration);
     }
@@ -101,5 +104,21 @@ public class MethodDeclaration extends Descriptor {
      */
     public String getReturnType() {
         return returnType;
+    }
+
+    public ArrayList<VariableDeclaration> getAllParametersAndVariables() {
+        ArrayList<VariableDeclaration> temp = new ArrayList<>();
+        temp.addAll(allParameters);
+        temp.addAll(allVariables.values());
+
+        return temp;
+    }
+
+    public Boolean getWritedLocals() {
+        return writedLocals;
+    }
+
+    public void setWritedLocals(Boolean writedLocals) {
+        this.writedLocals = writedLocals;
     }
 }

@@ -29,9 +29,9 @@ public class ClassDeclaration extends Descriptor {
     public void addVariable(Node node, String name) {
         VariableDeclaration variableDeclaration = null;
         if(node.jjtGetChild(0) instanceof ASTType) {
-            variableDeclaration = new VariableDeclaration(node, name, ((ASTType)node.jjtGetChild(0)).isArray);
+            variableDeclaration = new VariableDeclaration(node, name, ((ASTType)node.jjtGetChild(0)).isArray, allVariables.size());
         } else {
-            variableDeclaration = new VariableDeclaration(node, name, false);
+            variableDeclaration = new VariableDeclaration(node, name, false, allVariables.size());
         }
         allVariables.put(variableDeclaration.getName(), variableDeclaration);
     }
