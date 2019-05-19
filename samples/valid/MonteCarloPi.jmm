@@ -3,26 +3,34 @@ class MonteCarloPi {
 		int c;
 		int d;
 		int[] x;
+		int[] y;
 
 		x = new int[2];
 
-		x[1] = 0;
+		x[0] = 1;
+		x[1] = 2;
 
-		c = 10 * 3 + 8;
-		d = c;
+		// y = x;
 
-		return c + d;
+		c = x[0];
+
+		c = 10 * x.length + x[0];
+
+		return x.length;
 	}
 
 
 	public static void main(String[] args) {
-		// int num_samples;
+		int num_samples;
+		int x;
 
-		// if(1 < 5) {
+		x = 10;
 
-		// 	num_samples = 2;
-		// } else {
-		// 	num_samples = 5;
-		// }
+		if(16 < 5) {
+			num_samples = 2;
+		} else {
+			num_samples = 5;
+			num_samples = num_samples * x;
+		}
 	}
 }

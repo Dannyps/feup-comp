@@ -312,7 +312,6 @@ void Expression() #void : {}
     Expression1()
     (
         <AND> Expression() #And(2) |
-        <OPEN_BRACKET> Expression() <CLOSE_BRACKET> |
         <DOT> Term()
         (
             {y=3;} <OPEN_PARENTHESES> (Expression() {x++;} (<VIRG> Expression() {x++;})*)? #Parenteses(x) <CLOSE_PARENTHESES>
@@ -325,34 +324,36 @@ void Expression1() #void : {}
     Expression2() (<LESS> Expression2() #Less(2))*
 }
 
+
+
 void Expression2() #void : {} 
 {
-    {int x=0; int y=2;}
     Expression3() 
-    (
-        LOOKAHEAD(2) <DOT> Expression2()
-        (LOOKAHEAD(2)
-            {y=3;} <OPEN_PARENTHESES> (Expression() {x++;} (<VIRG> Expression() {x++;})*)? #Parenteses(x) <CLOSE_PARENTHESES>
-        )? #Dot(y)
-    )*
+    [
+        <SUM> Expression2() #Add(2) | 
+        <SUB> Expression2() #Sub(2)
+    ]
 }
 
 void Expression3() #void : {} 
 {
     Expression4() 
     [
-        <SUM> Expression3() #Add(2) | 
-        <SUB> Expression3() #Sub(2)
+        <MULT> Expression3() #Mult(2) | 
+        <DIV> Expression3() #Div(2)
     ]
 }
 
 void Expression4() #void : {} 
 {
+    {int x=0; int y=2;}
     Term() 
-    [
-        <MULT> Expression4() #Mult(2) | 
-        <DIV> Expression4() #Div(2)
-    ]
+    (
+        LOOKAHEAD(2) <DOT> Expression4()
+        (LOOKAHEAD(2)
+            {y=3;} <OPEN_PARENTHESES> (Expression4() {x++;} (<VIRG> Expression4() {x++;})*)? #Parenteses(x) <CLOSE_PARENTHESES>
+        )? #Dot(y)
+    )*
 }
 
 void Term() : {Token t;}
@@ -361,12 +362,12 @@ void Term() : {Token t;}
     {jjtThis.str = t.image;} | 
     t=<TRUE> {jjtThis.str = t.image;}|
     t=<FALSE> {jjtThis.str = t.image;}|
-    t=<IDENTIFIER> {jjtThis.str = t.image;}|
+    t=<IDENTIFIER> {jjtThis.str = t.image;} (<OPEN_BRACKET> Term() <CLOSE_BRACKET> #Bracket(1))?|
     t=<THIS> {jjtThis.str = t.image;}|
     t=<LENGTH> {jjtThis.str = t.image;}|
     <NEW> {} 
     (
-        <INT> <OPEN_BRACKET> Expression() <CLOSE_BRACKET> | 
+        <INT> <OPEN_BRACKET> Expression() <CLOSE_BRACKET> #NewArray(1) | 
         Term() #New(1) <OPEN_PARENTHESES> <CLOSE_PARENTHESES>
     ) |
     t=<NOT> Term() {jjtThis.str = t.image;} |
