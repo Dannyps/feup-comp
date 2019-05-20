@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
-
+import java.util.Random;
 import java.io.File;
 
 import ast.*;
@@ -124,11 +124,11 @@ public class Main {
                * variableDeclaration, equal); } }
                */ else if (child instanceof ASTIf) {
                 checkIf(child, descriptor);
-            } else if (child instanceof ASTLess || child instanceof ASTAnd) {
-                MethodDeclaration methodDeclaration = (MethodDeclaration) descriptor;
-                SimpleNode[] simpleNodes = new SimpleNode[1];
-                simpleNodes[0] = (SimpleNode) child;
-                checkVariableBoolean(methodDeclaration, null, simpleNodes);
+            // } else if (child instanceof ASTLess || child instanceof ASTAnd) {
+            //     MethodDeclaration methodDeclaration = (MethodDeclaration) descriptor;
+            //     SimpleNode[] simpleNodes = new SimpleNode[1];
+            //     simpleNodes[0] = (SimpleNode) child;
+            //     checkVariableBoolean(methodDeclaration, null, simpleNodes);
             } else if (child instanceof ASTWhile) {
                 checkWhile(child, descriptor);
             }
@@ -165,6 +165,10 @@ public class Main {
         toFile("iload 0");
         toFile("invokevirtual java/io/PrintStream/println(I)V");
 
+        toFile("getstatic java/lang/System/out Ljava/io/PrintStream;");
+        toFile("iload 1");
+        toFile("invokevirtual java/io/PrintStream/println(I)V");
+
         this.toFile("");
         this.toFile("return");
         this.toFile(".end method");
@@ -188,33 +192,12 @@ public class Main {
 
     private void checkIfCondition(Node node, Descriptor descriptor) {
         System.out.println(node);
-        // showChilds(node, descriptor);
-
-        // for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-        Node child = node.jjtGetChild(0);
-
-        if (child instanceof ASTLess || child instanceof ASTAnd) {
-
-        }
-
-        if (child instanceof ASTLess) {
-
-            SimpleNode[] simpleNodes = new SimpleNode[2];
-            simpleNodes[0] = (SimpleNode) child.jjtGetChild(0);
-            simpleNodes[1] = (SimpleNode) child.jjtGetChild(1);
-
-            checkVariableInt((MethodDeclaration) descriptor, null, simpleNodes);
-            toFile("if_icmplt ifBody");
-            toFile("goto elseBody");
-        } else if (child instanceof ASTAnd) {
-
-        }
-
-        // MethodDeclaration methodDeclaration = (MethodDeclaration) descriptor;
-        // SimpleNode[] simpleNodes = new SimpleNode[1];
-        // simpleNodes[0] = (SimpleNode) child;
-        // checkVariableBoolean(methodDeclaration, null, simpleNodes);
-        // }
+        SimpleNode[] childs = new SimpleNode[1];
+        childs[0] = (SimpleNode) node.jjtGetChild(0);
+        checkVariableBoolean((MethodDeclaration) descriptor, null, childs, true);
+        toFile("ldc 0");
+        toFile("if_icmpeq ifBody");
+        toFile("goto elseBody");
     }
 
     private void checkIfBody(Node node, Descriptor descriptor) {
@@ -234,19 +217,38 @@ public class Main {
     private void checkWhile(Node node, Descriptor descriptor) {
         System.out.println(node);
 
+        Random random = new Random();
+
+        Long time = System.currentTimeMillis();
+        Integer t = random.nextInt(1000);
+        String x = String.valueOf(time*t);
+
         if (node.jjtGetNumChildren() == 2) {
+
+            toFile("while_" + x + ":");
+            
+
             if (node.jjtGetChild(0) instanceof ASTWhileCondition) {
                 checkWhileCondition(node.jjtGetChild(0), descriptor);
+                toFile("ldc 0");
+                toFile("if_icmpne whileBody");
+                toFile("goto endWhile");
             }
             if (node.jjtGetChild(1) instanceof ASTWhileBody) {
+                toFile("whileBody:");
                 checkWhileBody(node.jjtGetChild(1), descriptor);
+                toFile("goto while_" + x);
             }
+
+            toFile("endWhile:");
         }
     }
 
     private void checkWhileCondition(Node node, Descriptor descriptor) {
         System.out.println(node);
-        showChilds(node, descriptor);
+        SimpleNode[] childs = new SimpleNode[1];
+        childs[0] = (SimpleNode) node.jjtGetChild(0);
+        checkVariableBoolean((MethodDeclaration) descriptor, null, childs, true);
     }
 
     private void checkWhileBody(Node node, Descriptor descriptor) {
@@ -408,7 +410,12 @@ public class Main {
 
         this.toFile("");
         try {
-            this.toFile(getSignature(classDeclaration.getAllMethods().get(name).getType()).toLowerCase() + "return");
+            if(getSignature(classDeclaration.getAllMethods().get(name).getType()).equals("[I")) {
+                this.toFile("areturn");
+
+            } else {
+                this.toFile(getSignature(classDeclaration.getAllMethods().get(name).getType()).toLowerCase() + "return");
+            }
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -419,7 +426,7 @@ public class Main {
 
     private void createMethodBody(Node node, Descriptor descriptor) {
         System.out.println("Create method body at " + node.jjtGetParent());
-        this.toFile(".limit stack " + ((MethodDeclaration) descriptor).getAllParameters().size() + 1);
+        this.toFile(".limit stack " + 1 + ((MethodDeclaration) descriptor).getAllParameters().size());
         ((MethodDeclaration) descriptor).setWritedLocals(false);
         showChilds(node, descriptor);
     }
@@ -453,7 +460,7 @@ public class Main {
                         checkVariableInt(methodDeclaration, null, simpleNodes);
                         return;
                     } else if (methodDeclaration.getType().equals("boolean")) {
-                        checkVariableBoolean(methodDeclaration, null, simpleNodes);
+                        checkVariableBoolean(methodDeclaration, null, simpleNodes, true);
                         return;
                     } else if (methodDeclaration.getType().equals("int[]")) {
                         checkVariableIntArray(methodDeclaration, null, simpleNodes);
@@ -470,46 +477,6 @@ public class Main {
                 toFile("iaload");
                 return;
             }
-
-            // if (simpleNode.jjtGetNumChildren() == 1) {
-            // if (methodDeclaration.getType().equals("int")) {
-
-            // checkVariableInt(methodDeclaration, null, simpleNodes);
-            // try {
-            // Integer number = Integer.parseInt(simpleNode.str);
-            // toFile("ldc " + number);
-            // return;
-            // } catch (NumberFormatException e) {
-            // VariableDeclaration variableDeclaration = getVariable(methodDeclaration,
-            // simpleNode.str);
-            // if (variableDeclaration.getType().equals("int")) {
-            // if (variableDeclaration.getInitiated()) {
-            // return;
-            // } else {
-            // this.showReturnError(methodDeclaration, variableDeclaration);
-            // }
-            // } else {
-            // this.showReturnError(methodDeclaration, variableDeclaration);
-            // }
-            // }
-            // } else if (methodDeclaration.getType().equals("boolean")) {
-            // if (simpleNode.str.equals("true") || simpleNode.str.equals("false")) {
-            // return;
-            // } else {
-            // VariableDeclaration variableDeclaration = getVariable(methodDeclaration,
-            // simpleNode.str);
-            // if (variableDeclaration.getType().equals("boolean")) {
-            // if (variableDeclaration.getInitiated()) {
-            // return;
-            // } else {
-            // this.showReturnError(methodDeclaration, variableDeclaration);
-            // }
-            // } else {
-            // this.showReturnError(methodDeclaration, variableDeclaration);
-            // }
-            // }
-            // }
-            // }
         } else {
             String errorMessage = classDeclaration.getName() + " dont have method " + methodName;
             showError(errorMessage);
@@ -547,11 +514,26 @@ public class Main {
                 toFile("istore " + ((MethodDeclaration) descriptor).getAllVariables().get(child.str).getIndex());
 
             } else if (variableDeclaration.getType().equals("boolean")) {
-                checkVariableBoolean(methodDeclaration, variableDeclaration, simpleNodes);
+                checkVariableBoolean(methodDeclaration, variableDeclaration, simpleNodes, false);
                 toFile("istore " + ((MethodDeclaration) descriptor).getAllVariables().get(child.str).getIndex());
 
             } else if (variableDeclaration.getType().equals("int[]")) {
-                if(node.jjtGetChild(1).jjtGetNumChildren() > 0) {
+                System.out.println(child.str);
+                System.out.println(simpleNodes[0].jjtGetNumChildren());
+                System.out.println(node.jjtGetChild(1).jjtGetNumChildren());
+                System.out.println(node.jjtGetChild(0).jjtGetNumChildren());
+
+                if(simpleNodes[0].jjtGetNumChildren() == 0 && node.jjtGetChild(0).jjtGetNumChildren() == 0) {
+                    toFile("");
+                    if(!variableDeclaration.getInitiated()) {
+                        String errorMessage = "Variable " + variableDeclaration.getName() + " hasn't been initialized yet";
+                        showError(errorMessage);
+                    }
+                    toFile("aload " + variableDeclaration.getIndex());
+                    simpleNodes[0] = (SimpleNode) node.jjtGetChild(1);
+                    checkVariableIntArray(methodDeclaration, variableDeclaration, simpleNodes);
+                    toFile("");
+                } else if(node.jjtGetChild(1).jjtGetNumChildren() > 0) {
 
                     if(node.jjtGetChild(1).jjtGetChild(0) instanceof ASTNewArray) {
                         System.out.println("here1");
@@ -566,13 +548,6 @@ public class Main {
                     simpleNodes[0] = (SimpleNode) node.jjtGetChild(1);
                     checkVariableIntArray(methodDeclaration, variableDeclaration, simpleNodes);
                 }
-                // if (variableDeclaration.getIsArray()) {
-                // if (node.jjtGetNumChildren() == 2) {
-                // SimpleNode[] childs = new SimpleNode[1];
-                // childs[0] = (SimpleNode) node.jjtGetChild(1).jjtGetChild(0);
-                // checkVariableInt(methodDeclaration, variableDeclaration, childs);
-                // }
-                // }
             }
         }
     }
@@ -594,7 +569,7 @@ public class Main {
                             if (var.getType().equals("int")) {
                                 checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
                             } else if (var.getType().equals("boolean")) {
-                                checkVariableBoolean(methodDeclaration, variableDeclaration, newChilds);
+                                checkVariableBoolean(methodDeclaration, variableDeclaration, newChilds, false);
                             } else if (var.getType().equals("int[]")) {
                                 checkVariableIntArray(methodDeclaration, variableDeclaration, newChilds);
                             }
@@ -612,7 +587,7 @@ public class Main {
                         if (var.getType().equals("int")) {
                             checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
                         } else if (var.getType().equals("boolean")) {
-                            checkVariableBoolean(methodDeclaration, variableDeclaration, newChilds);
+                            checkVariableBoolean(methodDeclaration, variableDeclaration, newChilds, false);
                         } else if (var.getType().equals("int[]")) {
                             checkVariableIntArray(methodDeclaration, variableDeclaration, newChilds);
                         }
@@ -632,6 +607,7 @@ public class Main {
             if (var.getInitiated()) {
                 if (simpleNodes.length == 1) {
                     if (methodDeclaration.getType().equals(var.getType())) {
+                        toFile("aload " + var.getIndex());
                         return;
                     } else {
                         String errorMessage = "Parameter of method " + methodDeclaration.getName() + " ("
@@ -645,15 +621,24 @@ public class Main {
                     checkVariableInt(methodDeclaration, variableDeclaration, childs);
                 }
             } else {
-                String errorMessage = "Variable " + var.getName() + " hasn't been initialized yet";
+                String errorMessage = "Variable " + var.getName() + " hasn't been initialized yet, and arrays need a memory alocation";
                 showError(errorMessage);
             }
         } else {
-            String name = simpleNodes[1].str;
+            String name = simpleNodes[0].str;
             VariableDeclaration dest = getVariable(methodDeclaration, name);
 
-            if(dest.getIsArray() && dest.getInitiated()) {
-
+            if(dest.getIsArray()) {
+                if(dest.getInitiated()) {
+                    variableDeclaration.setInitiated(true);
+                    toFile("astore " + dest.getIndex());
+                } else {
+                    String errorMessage = "The variable " + name + " dont be initialized";
+                    showError(errorMessage);
+                }
+            } else {
+                String errorMessage = "The variable " + name + " is not a array";
+                showError(errorMessage);
             }
         }
     }
@@ -663,6 +648,7 @@ public class Main {
         childs[0] = (SimpleNode) newArray.jjtGetChild(0);
 
         checkVariableInt(methodDeclaration, null, childs);
+        variableDeclaration.setInitiated(true);
         toFile("newarray int");
         toFile("astore " + variableDeclaration.getIndex());
     }
@@ -698,24 +684,10 @@ public class Main {
             } catch (NumberFormatException e) {
                 if (simpleNodes[0].op >= 1 && simpleNodes[0].op <= 4) {
                     System.out.println("Found sub operation " + MyConstants.ops[simpleNodes[0].op - 1]);
-                    SimpleNode[] childs = new SimpleNode[2];
+                    SimpleNode[] childs = new SimpleNode[1];
                     childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
-                    childs[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
-
-                    if (childs[0] instanceof ASTTerm) {
-                        if (childs[0].jjtGetNumChildren() > 0) {
-                            if (childs[0].jjtGetChild(0) instanceof ASTParenteses) {
-                                childs[0] = ((SimpleNode) childs[0].jjtGetChild(0).jjtGetChild(0));
-                            }
-                        }
-                    }
-                    if (childs[1].jjtGetNumChildren() > 0) {
-                        // childs[1] = (SimpleNode) childs[1].jjtGetChild(0);
-                    }
-                    if (childs[0].jjtGetNumChildren() > 0) {
-                        // childs[0] = (SimpleNode) childs[0].jjtGetChild(0);
-                    }
-
+                    checkVariableInt(methodDeclaration, variableDeclaration, childs);
+                    childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
                     checkVariableInt(methodDeclaration, variableDeclaration, childs);
                     toFileOperation(simpleNodes[0].op - 1);
                 } else if(simpleNodes[0] instanceof ASTDot) {
@@ -733,136 +705,6 @@ public class Main {
                         variableDeclaration.setInitiated(true);
                     }
                     toFile("iload " + varDest.getIndex());
-                }
-            }
-        } else if (simpleNodes.length == 2) {
-            SimpleNode[] childs = new SimpleNode[2];
-            childs[0] = (SimpleNode) simpleNodes[0];
-            childs[1] = (SimpleNode) simpleNodes[1];
-
-            if (childs[1].jjtGetNumChildren() > 0) {
-                // childs[1] = (SimpleNode) childs[1].jjtGetChild(0);
-            }
-            if (childs[0].jjtGetNumChildren() > 0) {
-                // childs[0] = (SimpleNode) childs[0].jjtGetChild(0);
-            }
-            try {
-                Integer leftSideNumber = Integer.parseInt(childs[0].str);
-                toFile("ldc " + leftSideNumber);
-                try {
-                    // dois inteiros
-                    Integer rightSideNumber = Integer.parseInt(childs[1].str);
-                    if (variableDeclaration != null && !variableDeclaration.getInitiated()) {
-                        variableDeclaration.setInitiated(true);
-                    }
-                    toFile("ldc " + rightSideNumber);
-                } catch (NumberFormatException e1) {
-                    // recursividade a direita
-                    if (childs[1].op >= 1 && childs[1].op <= 4) {
-                        SimpleNode[] newChilds = new SimpleNode[2];
-                        newChilds[0] = (SimpleNode) childs[1].jjtGetChild(0);
-                        newChilds[1] = (SimpleNode) childs[1].jjtGetChild(1);
-                        checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
-                        toFileOperation(childs[1].op - 1);
-                    }else if (simpleNodes[1].jjtGetNumChildren() > 0 && simpleNodes[1].jjtGetChild(0) instanceof ASTBracket) {
-                        initiateVariableWithArray(methodDeclaration, variableDeclaration, simpleNodes[1]);
-                    } else if(childs[1] instanceof ASTDot) {
-                        if(childs[1].jjtGetNumChildren() == 2) {
-                            checkArrayLength(childs[1], methodDeclaration);
-                        } else if(childs[1].jjtGetNumChildren() == 3) {
-
-                        }
-                    } else {
-                        // variavel a direita
-                        checkIfExistVariableAndYourType(methodDeclaration, childs[1].str, "int");
-                        VariableDeclaration varDest = methodDeclaration.getAllVariables().get(childs[1].str);
-                        if (variableDeclaration != null && !variableDeclaration.getInitiated()) {
-                            variableDeclaration.setInitiated(true);
-                        }
-                    }
-                }
-                return;
-            } catch (NumberFormatException e1) {
-                try {
-                    // inteiro lado direito
-                    Integer rightSideNumber = Integer.parseInt(childs[1].str);
-                    toFile("ldc " + rightSideNumber);
-                    // recursividade a esquerda
-                    if (childs[0].op >= 1 && childs[0].op <= 4) {
-                        SimpleNode[] newChilds = new SimpleNode[2];
-                        newChilds[0] = (SimpleNode) childs[0].jjtGetChild(0);
-                        newChilds[1] = (SimpleNode) childs[0].jjtGetChild(1);
-
-                        checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
-                        // if (!variableDeclaration.getInitiated()) {
-                        // variableDeclaration.setInitiated(true);
-                        // }
-                        toFileOperation(childs[0].op - 1);
-                    }else if (simpleNodes[0].jjtGetNumChildren() > 0 && simpleNodes[0].jjtGetChild(0) instanceof ASTBracket) {
-                        initiateVariableWithArray(methodDeclaration, variableDeclaration, simpleNodes[0]);
-                    } else if(childs[0] instanceof ASTDot) {
-                        if(childs[0].jjtGetNumChildren() == 2) {
-                            checkArrayLength(childs[0], methodDeclaration);
-                        } else if(childs[0].jjtGetNumChildren() == 3) {
-
-                        }
-                    } else {
-                        // variavel a esquerda
-                        checkIfExistVariableAndYourType(methodDeclaration, childs[0].str, "int");
-                        VariableDeclaration varDest = methodDeclaration.getAllVariables().get(childs[0].str);
-                        if (variableDeclaration != null && !variableDeclaration.getInitiated()) {
-                            variableDeclaration.setInitiated(true);
-                        }
-                        toFile("iload " + varDest.getIndex());
-
-                    }
-                } catch (NumberFormatException e2) {
-                    // duas strings
-                    if (childs[0].op >= 1 && childs[0].op <= 4) {
-                        SimpleNode[] newChilds = new SimpleNode[2];
-                        newChilds[0] = (SimpleNode) childs[0].jjtGetChild(0);
-                        newChilds[1] = (SimpleNode) childs[0].jjtGetChild(1);
-                        checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
-                    }else if (simpleNodes[0].jjtGetNumChildren() > 0 && simpleNodes[0].jjtGetChild(0) instanceof ASTBracket) {
-                        initiateVariableWithArray(methodDeclaration, variableDeclaration, simpleNodes[0]);
-                    } else if(childs[0] instanceof ASTDot) {
-                        if(childs[0].jjtGetNumChildren() == 2) {
-                            checkArrayLength(childs[0], methodDeclaration);
-                        } else if(childs[0].jjtGetNumChildren() == 3) {
-
-                        }
-                    } else {
-                        // variavel a esquerda
-                        checkIfExistVariableAndYourType(methodDeclaration, childs[0].str, "int");
-                        VariableDeclaration varDest = methodDeclaration.getAllVariables().get(childs[0].str);
-                        if (variableDeclaration != null && !variableDeclaration.getInitiated()) {
-                            variableDeclaration.setInitiated(true);
-                        }
-                        toFile("iload " + varDest.getIndex());
-                    }
-                    if (childs[1].op >= 1 && childs[1].op <= 4) {
-                        SimpleNode[] newChilds = new SimpleNode[2];
-                        newChilds[0] = (SimpleNode) childs[1].jjtGetChild(0);
-                        newChilds[1] = (SimpleNode) childs[1].jjtGetChild(1);
-                        checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
-                        toFileOperation(childs[1].op - 1);
-                    } else if (simpleNodes[1].jjtGetNumChildren() > 0 && simpleNodes[1].jjtGetChild(0) instanceof ASTBracket) {
-                        initiateVariableWithArray(methodDeclaration, variableDeclaration, simpleNodes[1]);
-                    } else if(childs[1] instanceof ASTDot) {
-                        if(childs[1].jjtGetNumChildren() == 2) {
-                            checkArrayLength(childs[1], methodDeclaration);
-                        } else if(childs[1].jjtGetNumChildren() == 3) {
-
-                        }
-                    } else {
-                        // variavel a direita
-                        checkIfExistVariableAndYourType(methodDeclaration, childs[1].str, "int");
-                        VariableDeclaration varDest = methodDeclaration.getAllVariables().get(childs[1].str);
-                        if (variableDeclaration != null && !variableDeclaration.getInitiated()) {
-                            variableDeclaration.setInitiated(true);
-                        }
-                        toFile("iload " + varDest.getIndex());
-                    }
                 }
             }
         }
@@ -890,98 +732,64 @@ public class Main {
     }
 
     private void checkVariableBoolean(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration,
-            SimpleNode[] simpleNodes) {
+            SimpleNode[] simpleNodes, Boolean comparation) {
         System.out.println(simpleNodes.length);
+        System.out.println(simpleNodes[0].str);
 
         if (simpleNodes.length == 1) {
-            if (simpleNodes[0].str != null
-                    && (simpleNodes[0].str.equals("true") || simpleNodes[0].str.equals("false"))) {
+            if (simpleNodes[0].str != null && simpleNodes[0].str.equals("true")) {
                 if (variableDeclaration != null) {
                     variableDeclaration.setInitiated(true);
-                    return;
                 } else {
                     String errorMessage = "Is NULL";
                     showError(errorMessage);
                 }
+                toFile("ldc 1");
+            } else if(simpleNodes[0].str != null && simpleNodes[0].str.equals("false")) {
+                if (variableDeclaration != null) {
+                    variableDeclaration.setInitiated(true);
+                } else {
+                    String errorMessage = "Is NULL";
+                    showError(errorMessage);
+                }
+                toFile("ldc 0");
             } else if (simpleNodes[0] instanceof ASTLess) {
                 System.out.println("Found sub operation " + MyConstants.ops[simpleNodes[0].op - 1]);
-                SimpleNode[] childs = new SimpleNode[2];
+                SimpleNode[] childs = new SimpleNode[1];
                 childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
-                childs[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
                 checkVariableInt(methodDeclaration, variableDeclaration, childs);
+
+                childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
+                checkVariableInt(methodDeclaration, variableDeclaration, childs);
+
+                Random random = new Random();
+
+                Long time = System.currentTimeMillis();
+                Integer t = random.nextInt(1000);
+                String x = String.valueOf(time*t);
+                
+                toFile("if_icmplt isTrue_" + x);
+                toFile("goto isFalse_" + x);
+    
+                toFile("isTrue_" + x + ":");
+                toFile("ldc 1");
+                toFile("goto endLess_" + x);
+                toFile("isFalse_" + x + ":");
+                toFile("ldc 0");
+                toFile("endLess_" + x + ":");
+
             } else if (simpleNodes[0].op.equals(MyConstants.AND)) {
-                SimpleNode[] childs = new SimpleNode[2];
+                SimpleNode[] childs = new SimpleNode[1];
                 childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
-                childs[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
-                checkVariableBoolean(methodDeclaration, variableDeclaration, childs);
+                checkVariableBoolean(methodDeclaration, variableDeclaration, childs, comparation);
+
+                childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
+                checkVariableBoolean(methodDeclaration, variableDeclaration, childs, comparation);
+
+                toFile("iand");
+
             } else {
                 checkIfExistVariableAndYourType(methodDeclaration, simpleNodes[0].str, "boolean");
-            }
-        } else if (simpleNodes.length == 2) {
-            SimpleNode[] childs = new SimpleNode[2];
-            childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
-            childs[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
-
-            if (simpleNodes[0].str.equals("true") || simpleNodes[0].str.equals("false")) {
-                if (simpleNodes[1].str.equals("true") || simpleNodes[1].str.equals("false")) {
-                    variableDeclaration.setInitiated(true);
-                    return;
-                } else if (simpleNodes[1].op.equals(MyConstants.LESS)) {
-                    SimpleNode[] newChilds = new SimpleNode[2];
-                    newChilds[0] = (SimpleNode) simpleNodes[1].jjtGetChild(0);
-                    newChilds[1] = (SimpleNode) simpleNodes[1].jjtGetChild(1);
-                    checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
-                } else if (simpleNodes[1].op.equals(MyConstants.AND)) {
-                    SimpleNode[] newChilds = new SimpleNode[2];
-                    newChilds[0] = (SimpleNode) simpleNodes[1].jjtGetChild(0);
-                    newChilds[1] = (SimpleNode) simpleNodes[1].jjtGetChild(1);
-                    checkVariableBoolean(methodDeclaration, variableDeclaration, newChilds);
-                } else {
-                    checkIfExistVariableAndYourType(methodDeclaration, simpleNodes[1].str, "boolean");
-                }
-            } else if (simpleNodes[1].str.equals("true") || simpleNodes[1].str.equals("false")) {
-                if (simpleNodes[0].op.equals(MyConstants.LESS)) {
-                    SimpleNode[] newChilds = new SimpleNode[2];
-                    newChilds[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
-                    newChilds[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
-                    checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
-                } else if (simpleNodes[0].op.equals(MyConstants.AND)) {
-                    SimpleNode[] newChilds = new SimpleNode[2];
-                    newChilds[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
-                    newChilds[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
-                    checkVariableBoolean(methodDeclaration, variableDeclaration, newChilds);
-                } else {
-                    checkIfExistVariableAndYourType(methodDeclaration, simpleNodes[0].str, "boolean");
-                }
-            } else {
-                if (simpleNodes[0].op.equals(MyConstants.LESS)) {
-                    SimpleNode[] newChilds = new SimpleNode[2];
-                    newChilds[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
-                    newChilds[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
-                    checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
-                } else if (simpleNodes[0].op.equals(MyConstants.AND)) {
-                    SimpleNode[] newChilds = new SimpleNode[2];
-                    newChilds[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
-                    newChilds[1] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
-                    checkVariableBoolean(methodDeclaration, variableDeclaration, newChilds);
-                } else {
-                    System.out.println("------------------" + simpleNodes[0]);
-                    checkIfExistVariableAndYourType(methodDeclaration, simpleNodes[0].str, "boolean");
-                }
-
-                if (simpleNodes[1].op.equals(MyConstants.LESS)) {
-                    SimpleNode[] newChilds = new SimpleNode[2];
-                    newChilds[0] = (SimpleNode) simpleNodes[1].jjtGetChild(0);
-                    newChilds[1] = (SimpleNode) simpleNodes[1].jjtGetChild(1);
-                    checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
-                } else if (simpleNodes[1].op.equals(MyConstants.AND)) {
-                    SimpleNode[] newChilds = new SimpleNode[2];
-                    newChilds[0] = (SimpleNode) simpleNodes[1].jjtGetChild(0);
-                    newChilds[1] = (SimpleNode) simpleNodes[1].jjtGetChild(1);
-                    checkVariableBoolean(methodDeclaration, variableDeclaration, newChilds);
-                } else {
-                    checkIfExistVariableAndYourType(methodDeclaration, simpleNodes[1].str, "boolean");
-                }
             }
         }
     }

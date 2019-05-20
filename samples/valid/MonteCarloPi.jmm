@@ -5,12 +5,13 @@ class MonteCarloPi {
 		int[] x;
 		int[] y;
 
-		x = new int[2];
+		x = new int[3];
+		y = new int[2];
 
 		x[0] = 1;
 		x[1] = 2;
 
-		// y = x;
+		y = x;
 
 		c = x[0];
 
@@ -19,18 +20,51 @@ class MonteCarloPi {
 		return x.length;
 	}
 
+	public int[] getArray() {
+		int[] array;
+		array = new int[2];
+
+		return array;
+	}
+
+	public int testWhile() {
+		int x;
+		
+		x = 0;
+
+		while (x < 10) {
+			x = x + 1;
+		}
+
+		return x;
+	}
+
 
 	public static void main(String[] args) {
 		int num_samples;
 		int x;
 
-		x = 10;
+		boolean f;
+		f = 3 < 4 && 3 < 4;
 
-		if(16 < 5) {
-			num_samples = 2;
+		x = 10 * 2 + 3;
+
+		x = 10;
+		num_samples = 1;
+
+		if(6 < 5 && 3 < 4) {
+			num_samples = 30 / x;
 		} else {
-			num_samples = 5;
 			num_samples = num_samples * x;
 		}
+
+
+		x = 0;
+
+		while (x < 10) {
+			x = x + 1;
+		}
+
+
 	}
 }
