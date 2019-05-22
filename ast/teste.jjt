@@ -306,22 +306,22 @@ void WhileBody() : {}
 	Statement()	
 }
 
-void Expression() #void : {} 
+void Expression1() #void : {} 
 {
     {int x=0; int y=2;}
-    Expression1()
+    Expression2()
     (
-        <AND> Expression() #And(2) |
+        <AND> Expression1() #And(2) |
         <DOT> Term()
         (
-            {y=3;} <OPEN_PARENTHESES> (Expression() {x++;} (<VIRG> Expression() {x++;})*)? #Parenteses(x) <CLOSE_PARENTHESES>
-        )? #Dot(2)
+            {y=3;} <OPEN_PARENTHESES> (Expression1() {x++;} (<VIRG> Expression1() {x++;})*)? #Parenteses(x) <CLOSE_PARENTHESES>
+        )? #Dot(y)
     )?
 }
 
-void Expression1() #void : {} 
+void Expression() #void : {} 
 {
-    Expression2() (<LESS> Expression2() #Less(2))*
+    Expression1() (<LESS> Expression1() #Less(2))*
 }
 
 
@@ -348,12 +348,6 @@ void Expression4() #void : {}
 {
     {int x=0; int y=2;}
     Term() 
-    (
-        LOOKAHEAD(2) <DOT> Expression4()
-        (LOOKAHEAD(2)
-            {y=3;} <OPEN_PARENTHESES> (Expression4() {x++;} (<VIRG> Expression4() {x++;})*)? #Parenteses(x) <CLOSE_PARENTHESES>
-        )? #Dot(y)
-    )*
 }
 
 void Term() : {Token t;}

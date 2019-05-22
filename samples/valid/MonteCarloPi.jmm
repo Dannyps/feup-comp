@@ -1,69 +1,62 @@
 class MonteCarloPi {
-	public int getDouble(int a, int b) {
-		int c;
-		int d;
-		int[] x;
-		int[] y;
+	public boolean performSingleEstimate() {
+		int rand1;
+		int rand2;
+		boolean in_circle;
+		int squareDist;
 
-		x = new int[3];
-		y = new int[2];
+		rand1 = MathUtils.random(0-100, 100);
+		rand2 = MathUtils.random(0-100, 100);
 
-		x[0] = 1;
-		x[1] = 2;
-
-		y = x;
-
-		c = x[0];
-
-		c = 10 * x.length + x[0];
-
-		return x.length;
-	}
-
-	public int[] getArray() {
-		int[] array;
-		array = new int[2];
-
-		return array;
-	}
-
-	public int testWhile() {
-		int x;
-		
-		x = 0;
-
-		while (x < 10) {
-			x = x + 1;
+		squareDist = (rand1 * rand1 + rand2 * rand2) / 100;
+		if (squareDist < 100) {
+			in_circle = true;
+		} else {
+			in_circle = false;
 		}
 
-		return x;
+		return in_circle;
 	}
 
+	public int estimatePi100(int n) {
+		int samples_in_circle;
+		int samples_so_far;
+		int pi_estimate;
+
+		samples_so_far = 0;
+		samples_in_circle = 0;
+
+		while (samples_so_far < n) {
+			if (this.performSingleEstimate()) {
+				samples_in_circle = samples_in_circle + 1;
+			} else {
+			}
+			samples_so_far = samples_so_far + 1;
+		}
+
+		pi_estimate = 400 * samples_in_circle / n;
+		return pi_estimate;
+	}
 
 	public static void main(String[] args) {
+		int pi_estimate_times_100;
 		int num_samples;
-		int x;
 
-		boolean f;
-		f = 3 < 4 && 3 < 4;
+		MonteCarloPi m;
 
-		x = 10 * 2 + 3;
+		m = new MonteCarloPi();
 
-		x = 10;
-		num_samples = 1;
+		if(1 < 5) {
 
-		if(6 < 5 && 3 < 4) {
-			num_samples = 30 / x;
+			num_samples = 10;
 		} else {
-			num_samples = num_samples * x;
+
 		}
 
+		num_samples = ioPlus.requestNumber();
+		pi_estimate_times_100 = new MonteCarloPi().estimatePi100(num_samples);
 
-		x = 0;
-
-		while (x < 10) {
-			x = x + 1;
-		}
+		ioPlus.printResult(pi_estimate_times_100);
 
 
 	}

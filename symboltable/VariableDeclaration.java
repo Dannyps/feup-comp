@@ -5,6 +5,7 @@ import ast.Node;
 public class VariableDeclaration extends Descriptor {
     private String type;
     private String name;
+    private Boolean isClassInstance;
     private Boolean initiated;
     private Boolean isArray;
     private Integer arrayLength;
@@ -19,6 +20,7 @@ public class VariableDeclaration extends Descriptor {
         this.initiated = false;
         this.isArray = isArray;
         this.index = index;
+        this.isClassInstance = false;
     }
 
     @Override
@@ -57,5 +59,13 @@ public class VariableDeclaration extends Descriptor {
 
     public Integer getIndex() {
         return index;
+    }
+
+    public Boolean getIsClassInstance() {
+        return isClassInstance;
+    }
+
+    public void setIsClassInstance(Boolean isClassIntance) {
+        this.isClassInstance = isClassIntance;
     }
 }

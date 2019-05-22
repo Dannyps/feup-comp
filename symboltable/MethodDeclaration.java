@@ -44,12 +44,15 @@ public class MethodDeclaration extends Descriptor {
         return allVariables.containsKey(name);
     }
 
-    public void addVariable(Node node, String name) {
+    public void addVariable(Node node, String name, ClassDeclaration classDeclaration) {
         VariableDeclaration variableDeclaration = null;
         if (node.jjtGetChild(0) instanceof ASTType) {
-            variableDeclaration = new VariableDeclaration(node, name, ((ASTType) node.jjtGetChild(0)).isArray, allVariables.size());
+            variableDeclaration = new VariableDeclaration(node, name, ((ASTType) node.jjtGetChild(0)).isArray, allVariables.size() + allParameters.size());
         } else {
-            variableDeclaration = new VariableDeclaration(node, name, false, allVariables.size());
+            variableDeclaration = new VariableDeclaration(node, name, false, allVariables.size() + allParameters.size());
+        }
+        if(variableDeclaration != null && variableDeclaration.getType().equals(classDeclaration.getName())) {
+            variableDeclaration.setIsClassInstance(true);
         }
         allVariables.put(variableDeclaration.getName(), variableDeclaration);
     }
@@ -120,5 +123,17 @@ public class MethodDeclaration extends Descriptor {
 
     public void setWritedLocals(Boolean writedLocals) {
         this.writedLocals = writedLocals;
+    }
+
+    public VariableDeclaration getVariable(String name) {
+        if(allVariables.containsKey(name)) {
+            return allVariables.get(name);
+        }
+        for(int i = 0 ; i < allParameters.size() ; i++) {
+            if(allParameters.get(i).getName().equals(name)) {
+                return allParameters.get(i);
+            }
+        }
+        return null;
     }
 }
