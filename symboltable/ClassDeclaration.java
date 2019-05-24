@@ -12,11 +12,13 @@ public class ClassDeclaration extends Descriptor {
     private HashMap<String, MethodDeclaration> allMethods;
 
     private String name;
+    private Boolean writedConstructor;
 
     public ClassDeclaration(Node node, String name) {
         super(node, DescriptorType.CLASS_DECLARATION);
 
         this.name = name;
+        this.writedConstructor = false;
 
         allVariables = new HashMap<>();
         allMethods = new HashMap<>();
@@ -28,8 +30,9 @@ public class ClassDeclaration extends Descriptor {
 
     public void addVariable(Node node, String name) {
         VariableDeclaration variableDeclaration = null;
-        if(node.jjtGetChild(0) instanceof ASTType) {
-            variableDeclaration = new VariableDeclaration(node, name, ((ASTType)node.jjtGetChild(0)).isArray, allVariables.size());
+        if (node.jjtGetChild(0) instanceof ASTType) {
+            variableDeclaration = new VariableDeclaration(node, name, ((ASTType) node.jjtGetChild(0)).isArray,
+                    allVariables.size());
         } else {
             variableDeclaration = new VariableDeclaration(node, name, false, allVariables.size());
         }
@@ -58,4 +61,18 @@ public class ClassDeclaration extends Descriptor {
     public HashMap<String, VariableDeclaration> getAllVariables() {
         return allVariables;
     }
+
+    /**
+     * @return the writedConstructor
+     */
+    public Boolean getWritedConstructor() {
+        return writedConstructor;
+    }
+
+    /**
+     * @param writedConstructor the writedConstructor to set
+     */
+    public void setWritedConstructor(Boolean writedConstructor) {
+        this.writedConstructor = writedConstructor;
+    }    
 }

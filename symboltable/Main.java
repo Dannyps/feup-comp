@@ -92,8 +92,8 @@ public class Main {
                 if (!((MethodDeclaration) descriptor).getWritedLocals()) {
                     if (!(child instanceof ASTVarDeclaration)) {
                         ((MethodDeclaration) descriptor).setWritedLocals(true);
-                        toFile(".limit locals "
-                                + ((MethodDeclaration) descriptor).getAllParametersAndVariables().size());
+                        Integer total = ((MethodDeclaration) descriptor).getAllParametersAndVariables().size() + classDeclaration.getAllVariables().size();
+                        toFile(".limit locals " + total);
                         toFile("");
                     }
                 }
@@ -129,7 +129,8 @@ public class Main {
         if (descriptor instanceof MethodDeclaration) {
             if (!((MethodDeclaration) descriptor).getWritedLocals()) {
                 ((MethodDeclaration) descriptor).setWritedLocals(true);
-                this.toFile(".limit locals " + ((MethodDeclaration) descriptor).getAllParametersAndVariables().size());
+                Integer total = ((MethodDeclaration) descriptor).getAllParametersAndVariables().size() + classDeclaration.getAllVariables().size();
+                this.toFile(".limit locals " + total);
                 toFile("");
             }
         }
@@ -344,9 +345,10 @@ public class Main {
 
     /**
      * @brief verifica se os filhos do node correspondem ao nome de uma variavel do
-     * tipo array e se o segundo filho é 'length' e gera os bytecodes adequados
+     *        tipo array e se o segundo filho é 'length' e gera os bytecodes
+     *        adequados
      * 
-     * @param node no com o ponto para explorar os filhos
+     * @param node       no com o ponto para explorar os filhos
      * @param descriptor metodo onde esta a ser usado
      */
     private void checkArrayLength(Node node, Descriptor descriptor) {
@@ -401,11 +403,11 @@ public class Main {
     }
 
     /**
-     * @brief cria uma variavel com o nome e tipo contidos no parametro node e 
-     * adiciona a class ou respetivo metodo passado no descriptor
+     * @brief cria uma variavel com o nome e tipo contidos no parametro node e
+     *        adiciona a class ou respetivo metodo passado no descriptor
      * 
      * @param descriptor metodo ou class onde a variavel esta a ser declarada
-     * @param node no com o nome e tipo da variavel
+     * @param node       no com o nome e tipo da variavel
      */
     private void createVariable(Descriptor descriptor, Node node) {
         String[] splited = node.toString().split(":");
@@ -415,6 +417,9 @@ public class Main {
         System.out.println("Add variable " + node + " at " + descriptor);
 
         if (descriptor instanceof ClassDeclaration) {
+
+            System.out.println("************************************************");
+
             ClassDeclaration classDeclaration = (ClassDeclaration) descriptor;
             if (!classDeclaration.haveVariable(name)) {
                 classDeclaration.addVariable(node, typeAndName);
@@ -466,6 +471,19 @@ public class Main {
      * @param node nó com a inicio da declaração de um método
      */
     private void createMethod(Node node) {
+        if (!classDeclaration.getWritedConstructor()) {
+            classDeclaration.setWritedConstructor(true);
+            toFile(".method public <init>()V");
+
+            toFile("aload 0");
+            toFile("invokespecial java/lang/Object/<init>()V");
+            toFile("return");
+            toFile(".end method");
+        
+            this.toFile("");
+        }
+
+
         String[] splited = node.toString().split(":");
         String typeAndName = splited[1];
         String name = typeAndName.split(" ")[1];

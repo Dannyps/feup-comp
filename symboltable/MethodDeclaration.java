@@ -49,7 +49,7 @@ public class MethodDeclaration extends Descriptor {
         if (node.jjtGetChild(0) instanceof ASTType) {
             variableDeclaration = new VariableDeclaration(node, name, ((ASTType) node.jjtGetChild(0)).isArray, allVariables.size() + allParameters.size());
         } else {
-            variableDeclaration = new VariableDeclaration(node, name, false, allVariables.size() + allParameters.size());
+            variableDeclaration = new VariableDeclaration(node, name, false, allVariables.size() + allParameters.size() + classDeclaration.getAllVariables().size());
         }
         if(variableDeclaration != null && variableDeclaration.getType().equals(classDeclaration.getName())) {
             variableDeclaration.setIsClassInstance(true);
