@@ -1,4 +1,6 @@
-## Usage
+# Usage
+
+## O programa foi testado com o ficheiro MonteCarloPi.jmm disponivel na pasta samples/valid
 
 Use the script `compile.sh` and specify the Java-- file (**.jmm**) to be parsed.
 
@@ -25,3 +27,6 @@ iload 1
 ; invoke println
 invokevirtual java/io/PrintStream/println(I)V
 ```
+
+
+
