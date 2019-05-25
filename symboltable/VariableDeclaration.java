@@ -6,6 +6,7 @@ public class VariableDeclaration extends Descriptor {
     private String type;
     private String name;
     private Boolean isClassInstance;
+    private Boolean isClassVariable;
     private Boolean initiated;
     private Boolean isArray;
     private Integer arrayLength;
@@ -21,6 +22,7 @@ public class VariableDeclaration extends Descriptor {
         this.isArray = isArray;
         this.index = index;
         this.isClassInstance = false;
+        this.isClassVariable = false;
     }
 
     @Override
@@ -67,5 +69,13 @@ public class VariableDeclaration extends Descriptor {
 
     public void setIsClassInstance(Boolean isClassIntance) {
         this.isClassInstance = isClassIntance;
+    }
+
+    public Boolean getIsClassVariable() {
+        return isClassVariable;
+    }
+
+    public void setIsClassVariable(Boolean isClassVariable) {
+        this.isClassVariable = isClassVariable;
     }
 }

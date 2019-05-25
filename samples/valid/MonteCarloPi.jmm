@@ -42,10 +42,6 @@ class MonteCarloPi {
 		int pi_estimate_times_100;
 		int num_samples;
 
-		MonteCarloPi m;
-
-		m = new MonteCarloPi();
-
 		if(1 < 5) {
 
 			num_samples = 10;
@@ -57,7 +53,5 @@ class MonteCarloPi {
 		pi_estimate_times_100 = new MonteCarloPi().estimatePi100(num_samples);
 
 		ioPlus.printResult(pi_estimate_times_100);
-
-
 	}
 }

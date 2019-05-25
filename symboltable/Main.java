@@ -92,9 +92,17 @@ public class Main {
                 if (!((MethodDeclaration) descriptor).getWritedLocals()) {
                     if (!(child instanceof ASTVarDeclaration)) {
                         ((MethodDeclaration) descriptor).setWritedLocals(true);
-                        Integer total = ((MethodDeclaration) descriptor).getAllParametersAndVariables().size() + classDeclaration.getAllVariables().size();
+                        Integer total = ((MethodDeclaration) descriptor).getAllParametersAndVariables().size() + 1;
                         toFile(".limit locals " + total);
                         toFile("");
+
+                        if (((MethodDeclaration) descriptor).getName().equals("main()")) {
+                            toFile("new " + classDeclaration.getName());
+                            toFile("dup");
+                            toFile("invokespecial " + classDeclaration.getName() + "/<init>()V");
+                            toFile("astore 0");
+                            toFile("");
+                        }
                     }
                 }
             }
@@ -106,7 +114,6 @@ public class Main {
             } else if (child instanceof ASTMethodDeclaration) {
                 createMethod(child);
             } else if (child instanceof ASTMethodParameter) {
-                System.out.println("Parameter");
                 createParameter(descriptor, child);
             } else if (child instanceof ASTMethodBody) {
                 createMethodBody(child, descriptor);
@@ -129,7 +136,7 @@ public class Main {
         if (descriptor instanceof MethodDeclaration) {
             if (!((MethodDeclaration) descriptor).getWritedLocals()) {
                 ((MethodDeclaration) descriptor).setWritedLocals(true);
-                Integer total = ((MethodDeclaration) descriptor).getAllParametersAndVariables().size() + classDeclaration.getAllVariables().size();
+                Integer total = ((MethodDeclaration) descriptor).getAllParametersAndVariables().size() + 1;
                 this.toFile(".limit locals " + total);
                 toFile("");
             }
@@ -143,8 +150,6 @@ public class Main {
      * @param descriptor objeto ClassDeclaration á qual o main vai pertencer
      */
     private void checkMain(Node node, Descriptor descriptor) {
-        System.out.println(node);
-
         String methodLine = ".method public static main([Ljava/lang/String;)V"; // all methods are public in Java--
         toFile(methodLine);
 
@@ -174,7 +179,6 @@ public class Main {
      * @param descriptor objeto MethodDeclaration ao qual o if pertence
      */
     private void checkIf(Node node, Descriptor descriptor) {
-        System.out.println(node);
         if (node.jjtGetNumChildren() == 3 && node instanceof ASTIf) {
             if (node.jjtGetChild(0) instanceof ASTIfCondition) {
                 checkIfCondition(node.jjtGetChild(0), descriptor);
@@ -195,7 +199,6 @@ public class Main {
      * @param descriptor objeto MethodDeclaration ao qual o if pertence
      */
     private void checkIfCondition(Node node, Descriptor descriptor) {
-        System.out.println(node);
         SimpleNode[] childs = new SimpleNode[1];
         childs[0] = (SimpleNode) node.jjtGetChild(0);
         checkVariableBoolean((MethodDeclaration) descriptor, null, childs, true);
@@ -213,7 +216,6 @@ public class Main {
      */
     private void checkIfBody(Node node, Descriptor descriptor) {
         toFile("ifBody:");
-        System.out.println(node);
         showChilds(node, descriptor);
         toFile("goto end");
     }
@@ -227,7 +229,6 @@ public class Main {
      */
     private void checkElseBody(Node node, Descriptor descriptor) {
         toFile("elseBody:");
-        System.out.println(node);
         showChilds(node, descriptor);
         toFile("end:");
     }
@@ -240,8 +241,6 @@ public class Main {
      * @param descriptor objeto MethodDeclaration ao qual o while pertence
      */
     private void checkWhile(Node node, Descriptor descriptor) {
-        System.out.println(node);
-
         Random random = new Random();
 
         Long time = System.currentTimeMillis();
@@ -249,9 +248,7 @@ public class Main {
         String x = String.valueOf(time * t);
 
         if (node.jjtGetNumChildren() == 2) {
-
             toFile("while_" + x + ":");
-
             if (node.jjtGetChild(0) instanceof ASTWhileCondition) {
                 checkWhileCondition(node.jjtGetChild(0), descriptor);
                 toFile("ldc 0");
@@ -263,7 +260,6 @@ public class Main {
                 checkWhileBody(node.jjtGetChild(1), descriptor);
                 toFile("goto while_" + x);
             }
-
             toFile("endWhile:");
         }
     }
@@ -275,7 +271,6 @@ public class Main {
      * @param descriptor objeto MethodDeclaration ao qual o while pertence
      */
     private void checkWhileCondition(Node node, Descriptor descriptor) {
-        System.out.println(node);
         SimpleNode[] childs = new SimpleNode[1];
         childs[0] = (SimpleNode) node.jjtGetChild(0);
         checkVariableBoolean((MethodDeclaration) descriptor, null, childs, true);
@@ -288,7 +283,6 @@ public class Main {
      * @param descriptor objeto MethodDeclaration ao qual o if pertence
      */
     private void checkWhileBody(Node node, Descriptor descriptor) {
-        System.out.println(node);
         showChilds(node, descriptor);
     }
 
@@ -307,7 +301,19 @@ public class Main {
         position[0] = (SimpleNode) equal.jjtGetChild(0).jjtGetChild(0).jjtGetChild(0);
         SimpleNode[] value = new SimpleNode[1];
         value[0] = (SimpleNode) equal.jjtGetChild(1);
-        toFile("aload " + variableDeclaration.getIndex());
+
+        if (variableDeclaration.getIsClassVariable()) {
+            toFile("aload 0");
+            try {
+                toFile("getfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
+                        + getSignature(variableDeclaration.getType()));
+            } catch (Exception e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        } else {
+            toFile("iload " + variableDeclaration.getIndex());
+        }
         checkVariableInt(methodDeclaration, variableDeclaration, position);
         checkVariableInt(methodDeclaration, variableDeclaration, value);
         toFile("iastore");
@@ -332,13 +338,23 @@ public class Main {
         VariableDeclaration var = getVariable(methodDeclaration, array[0].str);
         if (var.getInitiated()) {
             if (variableDeclaration != null && variableDeclaration.getType().equals("int")) {
-
                 variableDeclaration.setInitiated(true);
                 System.out.println("Variable " + variableDeclaration.getName() + " has been assigned at position "
                         + position[0].str + " of array " + var.getName());
             }
         }
-        toFile("aload " + var.getIndex());
+        if (var.getIsClassVariable()) {
+            toFile("aload 0");
+            try {
+                toFile("getfield " + classDeclaration.getName() + "/" + var.getName() + " "
+                        + getSignature(var.getType()));
+            } catch (Exception e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        } else {
+            toFile("aload " + var.getIndex());
+        }
         checkVariableInt(methodDeclaration, var, position);
         toFile("iaload");
     }
@@ -360,7 +376,19 @@ public class Main {
         if (childs[1].str.equals("length")) {
             if (variableDeclaration.getIsArray()) {
                 if (variableDeclaration.getInitiated()) {
-                    toFile("aload " + getVariable(methodDeclaration, variableDeclaration.getName()).getIndex());
+
+                    if (variableDeclaration.getIsClassVariable()) {
+                        toFile("aload 0");
+                        try {
+                            toFile("getfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
+                                    + getSignature(variableDeclaration.getType()));
+                        } catch (Exception e1) {
+                            // TODO Auto-generated catch block
+                            e1.printStackTrace();
+                        }
+                    } else {
+                        toFile("aload " + variableDeclaration.getIndex());
+                    }
                     toFile("arraylength");
                     return;
                 } else {
@@ -417,12 +445,19 @@ public class Main {
         System.out.println("Add variable " + node + " at " + descriptor);
 
         if (descriptor instanceof ClassDeclaration) {
-
-            System.out.println("************************************************");
-
             ClassDeclaration classDeclaration = (ClassDeclaration) descriptor;
             if (!classDeclaration.haveVariable(name)) {
                 classDeclaration.addVariable(node, typeAndName);
+
+                VariableDeclaration var = classDeclaration.getAllVariables().get(typeAndName.split(" ")[1]);
+
+                try {
+                    toFile(".field private " + var.getName() + " " + getSignature(var.getType()));
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                toFile("");
             } else {
                 String errorMessage = "Class " + classDeclaration.getName() + " already have variable with name "
                         + name;
@@ -441,11 +476,11 @@ public class Main {
     }
 
     /**
-     * @brief cria um parametro com o nome e tipo passados no parametro node
-     * e insere no respetivo metodo passado no descriptor
+     * @brief cria um parametro com o nome e tipo passados no parametro node e
+     *        insere no respetivo metodo passado no descriptor
      * 
      * @param descriptor metodo onde o parametro esta a ser declarada
-     * @param node no com o nome e tipo do parametro 
+     * @param node       no com o nome e tipo do parametro
      */
     private void createParameter(Descriptor descriptor, Node node) {
         String[] splited = node.toString().split(":");
@@ -465,8 +500,8 @@ public class Main {
     }
 
     /**
-     * @brief verifica se o metodo esta bem declarado e chama as respetivas funções para
-     * percorrer os seus filhos e gera os bytecodes desse método
+     * @brief verifica se o metodo esta bem declarado e chama as respetivas funções
+     *        para percorrer os seus filhos e gera os bytecodes desse método
      * 
      * @param node nó com a inicio da declaração de um método
      */
@@ -479,10 +514,9 @@ public class Main {
             toFile("invokespecial java/lang/Object/<init>()V");
             toFile("return");
             toFile(".end method");
-        
+
             this.toFile("");
         }
-
 
         String[] splited = node.toString().split(":");
         String typeAndName = splited[1];
@@ -517,9 +551,10 @@ public class Main {
     }
 
     /**
-     * @brief verifica se o corpo do metodo esta correto e gera os bytecodes necessarios
+     * @brief verifica se o corpo do metodo esta correto e gera os bytecodes
+     *        necessarios
      * 
-     * @param node no com o inicio do corpo de uma metodo
+     * @param node       no com o inicio do corpo de uma metodo
      * @param descriptor class principal onde vai ser adiciona o metodo
      */
     private void createMethodBody(Node node, Descriptor descriptor) {
@@ -527,7 +562,7 @@ public class Main {
         MethodDeclaration methodDeclaration = (MethodDeclaration) descriptor;
         if (!methodDeclaration.getName().equals("main()")) {
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append(".method public static ");
+            stringBuilder.append(".method public ");
             stringBuilder.append(methodDeclaration.getName().substring(0, methodDeclaration.getName().length() - 1));
 
             try {
@@ -548,12 +583,12 @@ public class Main {
         ((MethodDeclaration) descriptor).setWritedLocals(false);
         showChilds(node, descriptor);
     }
-    
+
     /**
      * @atraves do seu pai verifica se o return e compativel com o tipo de return
-     * declarado no pai e gera os bytecodes necessarios
+     *          declarado no pai e gera os bytecodes necessarios
      * 
-     * @param node no com o inicio do retorno de um metodo
+     * @param node   no com o inicio do retorno de um metodo
      * @param parent no com o pai do return que vai ser o respetivo metodo
      */
     private void checkReturn(Node node, Node parent) {
@@ -596,7 +631,20 @@ public class Main {
                 simpleNodes[0] = simpleNode;
                 simpleNodes[1] = (SimpleNode) node.jjtGetChild(1);
 
-                toFile("aload " + methodDeclaration.getVariable(simpleNodes[0].str).getIndex());
+                VariableDeclaration var = methodDeclaration.getVariable(simpleNodes[0].str);
+
+                if (var.getIsClassVariable()) {
+                    toFile("aload 0");
+                    try {
+                        toFile("getfield " + classDeclaration.getName() + "/" + var.getName() + " "
+                                + getSignature(var.getType()));
+                    } catch (Exception e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
+                } else {
+                    toFile("aload " + var.getIndex());
+                }
                 checkVariableIntArray(methodDeclaration, null, simpleNodes);
                 toFile("iaload");
                 return;
@@ -610,9 +658,12 @@ public class Main {
     /**
      * @brief cria uma variavel do mesmo tipo que a class principal
      * 
-     * @param methodDeclaration metodo on a a variavel do tipo class esta a ser criada
-     * @param node no com o ponto onde tem as informacoes para instanciar a variavel
-     * @param variableDeclaration variavel onde vai ser guardada a instanciação da class
+     * @param methodDeclaration   metodo on a a variavel do tipo class esta a ser
+     *                            criada
+     * @param node                no com o ponto onde tem as informacoes para
+     *                            instanciar a variavel
+     * @param variableDeclaration variavel onde vai ser guardada a instanciação da
+     *                            class
      */
     private void checkNewClassMethod(MethodDeclaration methodDeclaration, Node node,
             VariableDeclaration variableDeclaration) {
@@ -623,6 +674,12 @@ public class Main {
         methodName.str += "()";
         SimpleNode parenteses = (SimpleNode) node.jjtGetChild(2);
 
+        toFile("new " + classDeclaration.getName());
+        toFile("dup");
+        toFile("invokespecial " + classDeclaration.getName() + "/<init>()V");
+        toFile("astore 0");
+        toFile("");
+
         SimpleNode[] simpleNodes = new SimpleNode[3];
         simpleNodes[0] = className;
         simpleNodes[1] = methodName;
@@ -631,14 +688,33 @@ public class Main {
         checkMethodAndParameters(methodDeclaration, variableDeclaration, simpleNodes);
     }
 
+    private void checkNewClassWithoutDot(MethodDeclaration methodDeclaration, Node node,
+            VariableDeclaration variableDeclaration) {
+        SimpleNode equal = (SimpleNode) node;
+        SimpleNode astNew = (SimpleNode) node.jjtGetChild(0);
+        SimpleNode className = (SimpleNode) node.jjtGetChild(1).jjtGetChild(0).jjtGetChild(0);
+
+        if (className.str.equals(classDeclaration.getName())) {
+            toFile("new " + classDeclaration.getName());
+            toFile("dup");
+            toFile("invokespecial " + classDeclaration.getName() + "/<init>()V");
+            toFile("astore " + variableDeclaration.getIndex());
+            toFile("");
+        }
+
+        variableDeclaration.setInitiated(true);
+    }
+
     /**
-     * @brief se a variavelDeclaration nao for null chama a funcao e guarda o retorno nessa
-     * variavel se a variavel for null so faz a chamada a respetiva funcao
+     * @brief se a variavelDeclaration nao for null chama a funcao e guarda o
+     *        retorno nessa variavel se a variavel for null so faz a chamada a
+     *        respetiva funcao
      * 
-     * @param variableDeclaration variavel onde vai ser guardado o valor de retorno da funcao
-     * a variavel pode existir ou nao
-     * @param node no com o ponto ionde tem o nome da class e o metodo e os parametros do metodo
-     * @param descriptor metodo onde esta a ser usada a funcao
+     * @param variableDeclaration variavel onde vai ser guardado o valor de retorno
+     *                            da funcao a variavel pode existir ou nao
+     * @param node                no com o ponto ionde tem o nome da class e o
+     *                            metodo e os parametros do metodo
+     * @param descriptor          metodo onde esta a ser usada a funcao
      */
     private void checkMethodWithDot(VariableDeclaration variableDeclaration, Node node, Descriptor descriptor) {
         System.out.println("Function with dot");
@@ -650,8 +726,8 @@ public class Main {
             simpleNodes[0] = (SimpleNode) node;
             checkNewClassMethod(methodDeclaration, simpleNodes[0], variableDeclaration);
         } else {
+            String name = ((SimpleNode) node.jjtGetChild(0)).str;
             SimpleNode[] simpleNodes = new SimpleNode[3];
-
             simpleNodes[0] = (SimpleNode) node.jjtGetChild(0);
             simpleNodes[1] = (SimpleNode) node.jjtGetChild(1);
             simpleNodes[1].str += "()";
@@ -664,8 +740,8 @@ public class Main {
     /**
      * @brief instancia uma variavel com o respetivo valor
      * 
-     * @param node no com o igual onde tem o nome da variavel e o respetivo valor/variavel
-     * que se pretende atribuir a variavel
+     * @param node       no com o igual onde tem o nome da variavel e o respetivo
+     *                   valor/variavel que se pretende atribuir a variavel
      * @param descriptor class ou metodo onde a variavel esta a ser instanciada
      */
     private void initiateVariable(Node node, Descriptor descriptor) {
@@ -673,17 +749,30 @@ public class Main {
         SimpleNode child = (SimpleNode) node.jjtGetChild(0);
 
         System.out.println("Initiate one variable " + child.str);
-
         SimpleNode[] simpleNodes = new SimpleNode[1];
         simpleNodes[0] = (SimpleNode) node.jjtGetChild(1);
-
         VariableDeclaration variableDeclaration = getVariable(methodDeclaration, child.str);
 
-        if (simpleNodes[0] instanceof ASTDot) {
+        if (node.jjtGetNumChildren() > 1 && node.jjtGetChild(1).jjtGetNumChildren() > 0
+                && node.jjtGetChild(1).jjtGetChild(0) instanceof ASTNew) {
+            simpleNodes[0] = (SimpleNode) node;
+            checkNewClassWithoutDot(methodDeclaration, simpleNodes[0], variableDeclaration);
+        } else if (simpleNodes[0] instanceof ASTDot) {
             if (simpleNodes[0].jjtGetNumChildren() > 0 && simpleNodes[0].jjtGetChild(0).jjtGetNumChildren() > 0
                     && simpleNodes[0].jjtGetChild(0).jjtGetChild(0) instanceof ASTNew) {
                 checkNewClassMethod(methodDeclaration, simpleNodes[0], variableDeclaration);
-                toFile("istore " + ((MethodDeclaration) descriptor).getVariable(child.str).getIndex());
+                if(((MethodDeclaration) descriptor).getVariable(child.str).getIsClassVariable()) {
+                    toFile("aload 0");
+                    try {
+                        toFile("putfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
+                        + getSignature(variableDeclaration.getType()));
+                    } catch (Exception e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                } else {
+                    toFile("istore " + ((MethodDeclaration) descriptor).getVariable(child.str).getIndex());
+                }
             } else if (simpleNodes[0].jjtGetNumChildren() == 3) {
                 checkMethodWithDot(variableDeclaration, simpleNodes[0], descriptor);
                 toFile("istore " + ((MethodDeclaration) descriptor).getVariable(child.str).getIndex());
@@ -693,18 +782,33 @@ public class Main {
         } else {
             if (variableDeclaration.getType().equals("int")) {
                 checkVariableInt(methodDeclaration, variableDeclaration, simpleNodes);
-                toFile("istore " + ((MethodDeclaration) descriptor).getVariable(child.str).getIndex());
-
+                if(((MethodDeclaration) descriptor).getVariable(child.str).getIsClassVariable()) {
+                    toFile("aload 0");
+                    try {
+                        toFile("putfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
+                        + getSignature(variableDeclaration.getType()));
+                    } catch (Exception e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                } else {
+                    toFile("istore " + ((MethodDeclaration) descriptor).getVariable(child.str).getIndex());
+                }
             } else if (variableDeclaration.getType().equals("boolean")) {
                 checkVariableBoolean(methodDeclaration, variableDeclaration, simpleNodes, false);
-                toFile("istore " + ((MethodDeclaration) descriptor).getVariable(child.str).getIndex());
-
+                if(((MethodDeclaration) descriptor).getVariable(child.str).getIsClassVariable()) {
+                    toFile("aload 0");
+                    try {
+                        toFile("putfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
+                        + getSignature(variableDeclaration.getType()));
+                    } catch (Exception e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                } else {
+                    toFile("istore " + ((MethodDeclaration) descriptor).getVariable(child.str).getIndex());
+                }
             } else if (variableDeclaration.getType().equals("int[]")) {
-                System.out.println(child.str);
-                System.out.println(simpleNodes[0].jjtGetNumChildren());
-                System.out.println(node.jjtGetChild(1).jjtGetNumChildren());
-                System.out.println(node.jjtGetChild(0).jjtGetNumChildren());
-
                 if (simpleNodes[0].jjtGetNumChildren() == 0 && node.jjtGetChild(0).jjtGetNumChildren() == 0) {
                     toFile("");
                     if (!variableDeclaration.getInitiated()) {
@@ -712,19 +816,28 @@ public class Main {
                                 + " hasn't been initialized yet";
                         showError(errorMessage);
                     }
-                    toFile("aload " + variableDeclaration.getIndex());
+
+                    if (variableDeclaration.getIsClassVariable()) {
+                        toFile("aload 0");
+                        try {
+                            toFile("getfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
+                                    + getSignature(variableDeclaration.getType()));
+                        } catch (Exception e1) {
+                            // TODO Auto-generated catch block
+                            e1.printStackTrace();
+                        }
+                    } else {
+                        toFile("aload " + variableDeclaration.getIndex());
+                    }
                     simpleNodes[0] = (SimpleNode) node.jjtGetChild(1);
                     checkVariableIntArray(methodDeclaration, variableDeclaration, simpleNodes);
                     toFile("");
                 } else if (node.jjtGetChild(1).jjtGetNumChildren() > 0) {
-
                     if (node.jjtGetChild(1).jjtGetChild(0) instanceof ASTNewArray) {
-                        System.out.println("here1");
                         createArray(methodDeclaration, variableDeclaration,
                                 (SimpleNode) node.jjtGetChild(1).jjtGetChild(0));
                     }
                 } else if (node.jjtGetChild(0).jjtGetChild(0) instanceof ASTBracket) {
-                    System.out.println("here2");
                     String name = child.str;
                     variableDeclaration = getVariable(methodDeclaration, name);
                     initiateArrayPosition(methodDeclaration, variableDeclaration, (SimpleNode) node);
@@ -732,108 +845,116 @@ public class Main {
                     simpleNodes[0] = (SimpleNode) node.jjtGetChild(1);
                     checkVariableIntArray(methodDeclaration, variableDeclaration, simpleNodes);
                 }
-            } else if (variableDeclaration.getIsClassInstance()) {
-                toFile("new " + classDeclaration.getName());
-                toFile("astore " + variableDeclaration.getIndex());
             }
         }
     }
 
     /**
-     * @brief quando se faz uma chamada a uma funcao verifica se os o metodo retorna o
-     * mesmo tipo que a variableDeclaration caso naso seja null, e verifica se todos os parametros
-     * passados correspondem aos existentes na funcao
+     * @brief quando se faz uma chamada a uma funcao verifica se os o metodo retorna
+     *        o mesmo tipo que a variableDeclaration caso naso seja null, e verifica
+     *        se todos os parametros passados correspondem aos existentes na funcao
      * 
-     * @param methodDeclaration metodo onde esta a ser usado
+     * @param methodDeclaration   metodo onde esta a ser usado
      * @param variableDeclaration variavel a atribuir o retorno da funcao
-     * @param simpleNodes array com os nos da class, metodo e os parametos passados ao metodo
+     * @param simpleNodes         array com os nos da class, metodo e os parametos
+     *                            passados ao metodo
      */
     private void checkMethodAndParameters(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration,
             SimpleNode[] simpleNodes) {
-        if (classDeclaration.getName().equals(simpleNodes[0].str) || simpleNodes[0].str.equals("this")) {
-            if (classDeclaration.haveMethod(simpleNodes[1].str)) {
-                MethodDeclaration method = classDeclaration.getAllMethods().get(simpleNodes[1].str);
-                try {
-                    StringBuilder stringBuilder = new StringBuilder();
-                    stringBuilder.append("invokestatic ");
-                    stringBuilder.append(classDeclaration.getName());
-                    stringBuilder.append("/");
-                    stringBuilder.append(method.getName().substring(0, method.getName().length() - 1));
+        StringBuilder stringBuilder = new StringBuilder();
+        VariableDeclaration var2 = getVariable(methodDeclaration, simpleNodes[0].str);
+        MethodDeclaration method = classDeclaration.getAllMethods().get(simpleNodes[1].str);
 
-                    for (Integer i = 0; i < simpleNodes[2].jjtGetNumChildren(); i++) {
-                        SimpleNode[] newChilds = new SimpleNode[1];
-                        newChilds[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
-                        VariableDeclaration var = (VariableDeclaration) method.getAllParameters().get(i);
-                        if (var.getType().equals("int")) {
-                            checkVariableInt(methodDeclaration, variableDeclaration, newChilds);
-                        } else if (var.getType().equals("boolean")) {
-                            checkVariableBoolean(methodDeclaration, variableDeclaration, newChilds, false);
-                        } else if (var.getType().equals("int[]")) {
-                            checkVariableIntArray(methodDeclaration, variableDeclaration, newChilds);
-                        }
-                        stringBuilder.append(getSignature(var.getType()));
-                        if (i < simpleNodes[2].jjtGetNumChildren() - 1) {
-                            stringBuilder.append(",");
-                        }
-                    }
-                    stringBuilder.append(")");
-                    stringBuilder.append(getSignature(method.getType()));
-                    toFile(stringBuilder.toString());
-                } catch (Exception e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+        if (classDeclaration.getName().equals(simpleNodes[0].str) || simpleNodes[0].str.equals("this")
+                || (var2 != null && var2.getIsClassInstance())) {
+            if (classDeclaration.haveMethod(simpleNodes[1].str)) {
+
+                if (var2 != null && var2.getIsClassInstance()) {
+                    toFile("aload " + var2.getIndex());
+                } else {
+                    toFile("aload 0");
                 }
-                if (variableDeclaration != null) {
-                    variableDeclaration.setInitiated(true);
-                }
+
+                stringBuilder.append("invokevirtual ");
+                stringBuilder.append(classDeclaration.getName());
+                stringBuilder.append("/");
+                stringBuilder.append(simpleNodes[1].getStr().substring(0, simpleNodes[1].getStr().length() - 2));
+                stringBuilder.append("(");
             }
         } else {
-            StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append("invokestatic ");
             stringBuilder.append(simpleNodes[0].getStr());
             stringBuilder.append("/");
             stringBuilder.append(simpleNodes[1].getStr().substring(0, simpleNodes[1].getStr().length() - 2));
             stringBuilder.append("(");
+        }
 
-            if (simpleNodes[2] instanceof ASTParenteses) {
+        if (simpleNodes[2] instanceof ASTParenteses) {
+            if (simpleNodes[2].jjtGetNumChildren() > 0 && simpleNodes[2].jjtGetChild(0) instanceof ASTDot) {
+                System.out.println("*************************************");
 
-                if (simpleNodes[2].jjtGetNumChildren() > 0 && simpleNodes[2].jjtGetChild(0) instanceof ASTDot) {
-                    checkMethodWithDot(variableDeclaration, simpleNodes[2].jjtGetChild(0), methodDeclaration);
-                } else {
-                    System.out.println("********************************************");
+                checkMethodWithDot(variableDeclaration, simpleNodes[2].jjtGetChild(0), methodDeclaration);
 
-                    for (int i = 0; i < simpleNodes[2].jjtGetNumChildren(); i++) {
-                        if (variableDeclaration != null) {
-                            if (variableDeclaration.getType().equals("int")) {
-                                SimpleNode[] childs = new SimpleNode[1];
-                                childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
-                                checkVariableInt(methodDeclaration, null, childs);
-                            } else if (variableDeclaration.getType().equals("boolean")) {
-                                SimpleNode[] childs = new SimpleNode[1];
-                                childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
-                                checkVariableBoolean(methodDeclaration, null, childs, false);
-                            } else if (variableDeclaration.getType().equals("int[]")) {
-                                SimpleNode[] childs = new SimpleNode[1];
-                                childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
-                                checkVariableIntArray(methodDeclaration, null, childs);
+                SimpleNode n = (SimpleNode) simpleNodes[2].jjtGetChild(0).jjtGetChild(1);
+                MethodDeclaration m = classDeclaration.getAllMethods().get(n.str);
+
+                System.out.println(n.str);
+
+                try {
+                    if (m != null) {
+                        stringBuilder.append(getSignature(m.getType()));
+                    } else if (variableDeclaration != null) {
+                        stringBuilder.append(getSignature(variableDeclaration.getType()));
+                    }
+                    stringBuilder.append(")");
+                    if (method != null) {
+                        stringBuilder.append(getSignature(method.getType()));
+                    } else if (variableDeclaration != null) {
+                        stringBuilder.append(getSignature(variableDeclaration.getType()));
+                    } else {
+                        stringBuilder.append("V");
+                    }
+                    toFile(stringBuilder.toString());
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            } else {
+                System.out.println("..............................................");
+
+                if (variableDeclaration != null) {
+                    if (method != null) {
+                        if (variableDeclaration.getType().equals(method.getType())) {
+                            if (method.getAllParameters().size() == simpleNodes[2].jjtGetNumChildren()) {
+                                for (Integer i = 0; i < method.getAllParameters().size(); i++) {
+                                    if (method.getAllParameters().get(i).getType().equals("int")) {
+                                        SimpleNode[] childs = new SimpleNode[1];
+                                        childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
+                                        checkVariableInt(methodDeclaration, null, childs);
+                                    } else if (method.getAllParameters().get(i).getType().equals("boolean")) {
+                                        SimpleNode[] childs = new SimpleNode[1];
+                                        childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
+                                        checkVariableBoolean(methodDeclaration, null, childs, false);
+                                    } else if (method.getAllParameters().get(i).getType().equals("int[]")) {
+                                        SimpleNode[] childs = new SimpleNode[1];
+                                        childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
+                                        checkVariableIntArray(methodDeclaration, null, childs);
+                                    }
+
+                                    try {
+                                        stringBuilder.append(getSignature(method.getAllParameters().get(i).getType()));
+                                    } catch (Exception e) {
+                                        // TODO Auto-generated catch block
+                                        e.printStackTrace();
+                                    }
+                                }
                             }
-                            try {
-                                stringBuilder.append(getSignature(variableDeclaration.getType()));
-                            } catch (Exception e) {
-                                // TODO Auto-generated catch block
-                                e.printStackTrace();
-                            }
-                        } else {
+                        }
+                    } else {
+                        for (Integer i = 0; i < simpleNodes[2].jjtGetNumChildren(); i++) {
                             SimpleNode child = (SimpleNode) simpleNodes[2].jjtGetChild(i);
                             VariableDeclaration var = methodDeclaration.getVariable(child.str);
                             if (var != null) {
-                                try {
-                                    stringBuilder.append(getSignature(var.getType()));
-                                } catch (Exception e) {
-                                    // TODO Auto-generated catch block
-                                    e.printStackTrace();
-                                }
-
                                 if (var.getType().equals("int")) {
                                     SimpleNode[] childs = new SimpleNode[1];
                                     childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
@@ -847,11 +968,22 @@ public class Main {
                                     childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
                                     checkVariableIntArray(methodDeclaration, null, childs);
                                 }
+                                try {
+                                    stringBuilder.append(getSignature(var.getType()));
+                                } catch (Exception e) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                }
                             } else if (child.str != null && child.str.equals("true")) {
                                 toFile("ldc 1");
                                 stringBuilder.append("I");
                             } else if (child.str != null && child.str.equals("false")) {
                                 toFile("ldc 0");
+                                stringBuilder.append("I");
+                            } else if (child.op > 0 && child.op <= 4) {
+                                SimpleNode[] childs = new SimpleNode[1];
+                                childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
+                                checkVariableInt(methodDeclaration, null, childs);
                                 stringBuilder.append("I");
                             } else {
                                 try {
@@ -865,30 +997,76 @@ public class Main {
                             }
                         }
                     }
-                }
-            }
-            try {
-                if (variableDeclaration != null) {
-                    stringBuilder.append(")");
-                    stringBuilder.append(getSignature(variableDeclaration.getType()));
-                    toFile(stringBuilder.toString());
                 } else {
-                    stringBuilder.append(")V");
-                    toFile(stringBuilder.toString());
+                    for (Integer i = 0; i < simpleNodes[2].jjtGetNumChildren(); i++) {
+                        SimpleNode child = (SimpleNode) simpleNodes[2].jjtGetChild(i);
+                        VariableDeclaration var = methodDeclaration.getVariable(child.str);
+                        if (var != null) {
+                            if (var.getType().equals("int")) {
+                                SimpleNode[] childs = new SimpleNode[1];
+                                childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
+                                checkVariableInt(methodDeclaration, null, childs);
+                            } else if (var.getType().equals("boolean")) {
+                                SimpleNode[] childs = new SimpleNode[1];
+                                childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
+                                checkVariableBoolean(methodDeclaration, null, childs, false);
+                            } else if (var.getType().equals("int[]")) {
+                                SimpleNode[] childs = new SimpleNode[1];
+                                childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
+                                checkVariableIntArray(methodDeclaration, null, childs);
+                            }
+                            try {
+                                stringBuilder.append(getSignature(var.getType()));
+                            } catch (Exception e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+                        } else if (child.str != null && child.str.equals("true")) {
+                            toFile("ldc 1");
+                            stringBuilder.append("I");
+                        } else if (child.str != null && child.str.equals("false")) {
+                            toFile("ldc 0");
+                            stringBuilder.append("I");
+                        } else {
+                            try {
+                                Integer number = Integer.parseInt(child.str);
+                                toFile("ldc " + number.toString());
+                                stringBuilder.append("I");
+                            } catch (Exception e) {
+                                String errorMessage = "parameter unvailable";
+                                showError(errorMessage);
+                            }
+                        }
+                    }
+
                 }
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                try {
+                    stringBuilder.append(")");
+                    if (method != null) {
+                        stringBuilder.append(getSignature(method.getType()));
+                    } else if (variableDeclaration != null) {
+                        stringBuilder.append(getSignature(variableDeclaration.getType()));
+                    } else {
+                        stringBuilder.append("V");
+                    }
+                    toFile(stringBuilder.toString());
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
+
         }
+
     }
 
     /**
-     * @brief verifica se uma array esta a ser bem declarado, e gera os bytecodes necessarios
+     * @brief verifica se uma array esta a ser bem declarado, e gera os bytecodes
+     *        necessarios
      * 
-     * @param methodDeclaration metodo onde o array esta a ser usado
+     * @param methodDeclaration   metodo onde o array esta a ser usado
      * @param variableDeclaration variavel se nao null a atribuir o valor do array
-     * @param simpleNodes array com o no do inicio da declaracao do array
+     * @param simpleNodes         array com o no do inicio da declaracao do array
      */
     private void checkVariableIntArray(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration,
             SimpleNode[] simpleNodes) {
@@ -900,7 +1078,19 @@ public class Main {
             if (var.getInitiated()) {
                 if (simpleNodes.length == 1) {
                     if (methodDeclaration.getType().equals(var.getType())) {
-                        toFile("aload " + var.getIndex());
+
+                        if (var.getIsClassVariable()) {
+                            toFile("aload 0");
+                            try {
+                                toFile("getfield " + classDeclaration.getName() + "/" + var.getName() + " "
+                                        + getSignature(var.getType()));
+                            } catch (Exception e1) {
+                                // TODO Auto-generated catch block
+                                e1.printStackTrace();
+                            }
+                        } else {
+                            toFile("aload " + variableDeclaration.getIndex());
+                        }
                         return;
                     } else {
                         String errorMessage = "Parameter of method " + methodDeclaration.getName() + " ("
@@ -925,7 +1115,19 @@ public class Main {
             if (dest.getIsArray()) {
                 if (dest.getInitiated()) {
                     variableDeclaration.setInitiated(true);
-                    toFile("astore " + dest.getIndex());
+
+                    if (dest.getIsClassVariable()) {
+                        toFile("aload 0");
+                        try {
+                            toFile("putfield " + classDeclaration.getName() + "/" + dest.getName() + " "
+                                    + getSignature(dest.getType()));
+                        } catch (Exception e1) {
+                            // TODO Auto-generated catch block
+                            e1.printStackTrace();
+                        }
+                    } else {
+                        toFile("astore " + dest.getIndex());
+                    }
                 } else {
                     String errorMessage = "The variable " + name + " dont be initialized";
                     showError(errorMessage);
@@ -940,24 +1142,39 @@ public class Main {
     /**
      * @brief cria um array e gera os bytecodes necessarios
      * 
-     * @param methodDeclaration metodo onde o array existe
-     * @param variableDeclaration variavel se nao null onde vai ser guardado o valor do array 
-     * @param newArray no com o inicio da criacao de uma array
+     * @param methodDeclaration   metodo onde o array existe
+     * @param variableDeclaration variavel se nao null onde vai ser guardado o valor
+     *                            do array
+     * @param newArray            no com o inicio da criacao de uma array
      */
     private void createArray(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration,
             SimpleNode newArray) {
         SimpleNode[] childs = new SimpleNode[1];
         childs[0] = (SimpleNode) newArray.jjtGetChild(0);
 
+        if (variableDeclaration.getIsClassVariable()) {
+            toFile("aload 0");
+        }
+
         checkVariableInt(methodDeclaration, null, childs);
         variableDeclaration.setInitiated(true);
         toFile("newarray int");
-        toFile("astore " + variableDeclaration.getIndex());
+        if (variableDeclaration.getIsClassVariable()) {
+            try {
+                toFile("putfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
+                        + getSignature(variableDeclaration.getType()));
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        } else {
+            toFile("astore " + variableDeclaration.getIndex());
+        }
     }
 
     /**
-     * retorna a variavel com o nome 'name' do metodo 'methodDeclaration'
-     *  caso exista, se nao retorna null
+     * retorna a variavel com o nome 'name' do metodo 'methodDeclaration' caso
+     * exista, se nao retorna null
      */
     private VariableDeclaration getVariable(MethodDeclaration methodDeclaration, String name) {
         VariableDeclaration variableDeclaration = null;
@@ -968,22 +1185,23 @@ public class Main {
                 variableDeclaration = methodDeclaration.getVariable(name);
             } else if (classDeclaration.haveVariable(name)) {
                 variableDeclaration = classDeclaration.getAllVariables().get(name);
-            } else {
-                String errorMessage = "The variable " + name + " is not set in the scope of the method "
-                        + methodDeclaration.getNode() + " nor in the scope of the class " + classDeclaration.getNode();
-                showError(errorMessage);
-            }
+            } /*
+               * else { String errorMessage = "The variable " + name +
+               * " is not set in the scope of the method " + methodDeclaration.getNode() +
+               * " nor in the scope of the class " + classDeclaration.getNode();
+               * showError(errorMessage); }
+               */
         }
         return variableDeclaration;
     }
 
     /**
-     * @brief verifica recursivamente se todas as variaveis/valores sao do tipo int 
-     * e gera os bytecodes necessarios
+     * @brief verifica recursivamente se todas as variaveis/valores sao do tipo int
+     *        e gera os bytecodes necessarios
      * 
-     * @param methodDeclaration metodo a que a variavel pertence
+     * @param methodDeclaration   metodo a que a variavel pertence
      * @param variableDeclaration nome da variavel a instanciar se nao for null
-     * @param simpleNodes no com o inicio das operaçoes
+     * @param simpleNodes         no com o inicio das operaçoes
      */
     private void checkVariableInt(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration,
             SimpleNode[] simpleNodes) {
@@ -1032,7 +1250,18 @@ public class Main {
                     if (variableDeclaration != null && !variableDeclaration.getInitiated()) {
                         variableDeclaration.setInitiated(true);
                     }
-                    toFile("iload " + varDest.getIndex());
+
+                    if (varDest.getIsClassVariable()) {
+                        try {
+                            toFile("putfield " + classDeclaration.getName() + "/" + varDest.getName() + " "
+                                    + getSignature(varDest.getType()));
+                        } catch (Exception e1) {
+                            // TODO Auto-generated catch block
+                            e1.printStackTrace();
+                        }
+                    } else {
+                        toFile("iload " + varDest.getIndex());
+                    }
                 }
             }
         }
@@ -1065,18 +1294,15 @@ public class Main {
     }
 
     /**
-     * @brief verifica recursivamente se todas as variaveis/valores sao do tipo boolean 
-     * e gera os bytecodes necessarios
+     * @brief verifica recursivamente se todas as variaveis/valores sao do tipo
+     *        boolean e gera os bytecodes necessarios
      * 
-     * @param methodDeclaration metodo a que a variavel pertence
+     * @param methodDeclaration   metodo a que a variavel pertence
      * @param variableDeclaration nome da variavel a instanciar se nao for null
-     * @param simpleNodes no com o inicio das operaçoes
+     * @param simpleNodes         no com o inicio das operaçoes
      */
     private void checkVariableBoolean(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration,
             SimpleNode[] simpleNodes, Boolean comparation) {
-        System.out.println(simpleNodes.length);
-        System.out.println(simpleNodes[0].str);
-
         if (simpleNodes.length == 1) {
             if (simpleNodes[0].str != null && simpleNodes[0].str.equals("true")) {
                 if (variableDeclaration != null) {
@@ -1154,12 +1380,12 @@ public class Main {
 
     /**
      * 
-     * @brief verifica se no metodo existe a variavel com o nome 'name' e se o seu tipo
-     * coresponde ao tipo 'type'
+     * @brief verifica se no metodo existe a variavel com o nome 'name' e se o seu
+     *        tipo coresponde ao tipo 'type'
      * 
      * @param methodDeclaration metodo onde devera existir a variavel
-     * @param name nome da variavel que se pretende ver se existe
-     * @param type tipo da variavel que se pretende
+     * @param name              nome da variavel que se pretende ver se existe
+     * @param type              tipo da variavel que se pretende
      */
     private void checkIfExistVariableAndYourType(MethodDeclaration methodDeclaration, String name, String type) {
         if (classDeclaration.haveMethod(name)) {
@@ -1190,8 +1416,8 @@ public class Main {
     }
 
     /**
-     * @brief quando aluma coisa nao esta de acordo, mostra a mensagem de error e encerra
-     * o programa
+     * @brief quando aluma coisa nao esta de acordo, mostra a mensagem de error e
+     *        encerra o programa
      * 
      * @param errorMessage mensagem de erro
      */
@@ -1204,7 +1430,7 @@ public class Main {
 
     /**
      * @brief mostra um erro quando a variavel/valor que esta a ser retornado nao
-     * corresponde ao mesmo da funcao
+     *        corresponde ao mesmo da funcao
      * 
      * @param m metodo onde tem o erro
      * @param v varavel que esta a ser retornada
@@ -1242,7 +1468,8 @@ public class Main {
      * @brief abre o ficheiro onde vao ser gerados os bytecodes
      * 
      * @param cname nome do ficheiro
-     * @return true no caso de o ficheiro ser aberto corretamente e false no caso de erro
+     * @return true no caso de o ficheiro ser aberto corretamente e false no caso de
+     *         erro
      */
     private boolean openFile(String cname) {
         try {
@@ -1269,7 +1496,7 @@ public class Main {
 
     /**
      * @brief comforme o tipo passado como parametro retorna a assinatura a usar na
-     * geracao de bytecodes
+     *        geracao de bytecodes
      * 
      * @param returnType tipo que se pretende a assinatura
      * @return string com a respetiva assinatura

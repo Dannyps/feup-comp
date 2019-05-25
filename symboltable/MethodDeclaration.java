@@ -47,9 +47,9 @@ public class MethodDeclaration extends Descriptor {
     public void addVariable(Node node, String name, ClassDeclaration classDeclaration) {
         VariableDeclaration variableDeclaration = null;
         if (node.jjtGetChild(0) instanceof ASTType) {
-            variableDeclaration = new VariableDeclaration(node, name, ((ASTType) node.jjtGetChild(0)).isArray, allVariables.size() + allParameters.size());
+            variableDeclaration = new VariableDeclaration(node, name, ((ASTType) node.jjtGetChild(0)).isArray, allVariables.size() + 1 + allParameters.size());
         } else {
-            variableDeclaration = new VariableDeclaration(node, name, false, allVariables.size() + allParameters.size() + classDeclaration.getAllVariables().size());
+            variableDeclaration = new VariableDeclaration(node, name, false, allVariables.size() + 1 + allParameters.size());
         }
         if(variableDeclaration != null && variableDeclaration.getType().equals(classDeclaration.getName())) {
             variableDeclaration.setIsClassInstance(true);
@@ -73,9 +73,9 @@ public class MethodDeclaration extends Descriptor {
     public void addParameter(Node node, String name) {
         VariableDeclaration variableDeclaration = null;
         if (node.jjtGetChild(0) instanceof ASTType) {
-            variableDeclaration = new VariableDeclaration(node, name, ((ASTType) node.jjtGetChild(0)).isArray, allParameters.size());
+            variableDeclaration = new VariableDeclaration(node, name, ((ASTType) node.jjtGetChild(0)).isArray, allParameters.size() + 1);
         } else {
-            variableDeclaration = new VariableDeclaration(node, name, false, allParameters.size());
+            variableDeclaration = new VariableDeclaration(node, name, false, allParameters.size() + 1);
         }
         allParameters.add(variableDeclaration);
     }
