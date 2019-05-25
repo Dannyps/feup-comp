@@ -169,6 +169,18 @@ public class Main {
         this.toFile("return");
         this.toFile(".end method");
         this.toFile("");
+
+        if (!classDeclaration.getWritedConstructor()) {
+            classDeclaration.setWritedConstructor(true);
+            toFile(".method public <init>()V");
+
+            toFile("aload 0");
+            toFile("invokespecial java/lang/Object/<init>()V");
+            toFile("return");
+            toFile(".end method");
+
+            this.toFile("");
+        }
     }
 
     /**
@@ -506,18 +518,6 @@ public class Main {
      * @param node nó com a inicio da declaração de um método
      */
     private void createMethod(Node node) {
-        if (!classDeclaration.getWritedConstructor()) {
-            classDeclaration.setWritedConstructor(true);
-            toFile(".method public <init>()V");
-
-            toFile("aload 0");
-            toFile("invokespecial java/lang/Object/<init>()V");
-            toFile("return");
-            toFile(".end method");
-
-            this.toFile("");
-        }
-
         String[] splited = node.toString().split(":");
         String typeAndName = splited[1];
         String name = typeAndName.split(" ")[1];

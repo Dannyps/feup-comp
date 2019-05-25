@@ -8,5 +8,7 @@ class Arithm {
         z = 4;
         y = 6;
         x = z + y; 
+
+        ioPlus.printResult(x);
     }    
 }
