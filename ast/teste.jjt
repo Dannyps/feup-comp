@@ -306,22 +306,27 @@ void WhileBody() : {}
 	Statement()	
 }
 
-void Expression1() #void : {} 
+void Expression() #void : {} 
 {
-    {int x=0; int y=2;}
-    Expression2()
+    Expression1()
     (
-        <AND> Expression1() #And(2) |
-        <DOT> Term()
-        (
-            {y=3;} <OPEN_PARENTHESES> (Expression1() {x++;} (<VIRG> Expression1() {x++;})*)? #Parenteses(x) <CLOSE_PARENTHESES>
-        )? #Dot(y)
+        <AND> Expression() #And(2)
     )?
 }
 
-void Expression() #void : {} 
+void Expression1() #void : {} 
 {
-    Expression1() (<LESS> Expression1() #Less(2))*
+    {int x=0; int y=2;}
+
+    Expression2() 
+    (
+        LOOKAHEAD(2) <LESS> Expression1() #Less(2) |
+        <DOT> Term()
+        (
+            {y=3;} <OPEN_PARENTHESES> (Expression() {x++;} (<VIRG> Expression() {x++;})*)? #Parenteses(x) <CLOSE_PARENTHESES>
+        )? #Dot(y)
+        
+    )?
 }
 
 
