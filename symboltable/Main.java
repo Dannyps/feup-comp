@@ -203,7 +203,7 @@ public class Main {
         childs[0] = (SimpleNode) node.jjtGetChild(0);
         checkVariableBoolean((MethodDeclaration) descriptor, null, childs, true);
         toFile("ldc 0");
-        toFile("if_icmpeq ifBody");
+        toFile("if_icmpne ifBody");
         toFile("goto elseBody");
     }
 
