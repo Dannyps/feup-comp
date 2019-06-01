@@ -353,6 +353,12 @@ void Expression4() #void : {}
 {
     {int x=0; int y=2;}
     Term() 
+    (LOOKAHEAD(2)
+        <DOT> Term()
+        (
+            {y=3;} <OPEN_PARENTHESES> (Expression() {x++;} (<VIRG> Expression() {x++;})*)? #Parenteses(x) <CLOSE_PARENTHESES>
+        )? #Dot(y)
+    )?
 }
 
 void Term() : {Token t;}
@@ -369,7 +375,7 @@ void Term() : {Token t;}
         <INT> <OPEN_BRACKET> Expression() <CLOSE_BRACKET> #NewArray(1) | 
         Term() #New(1) <OPEN_PARENTHESES> <CLOSE_PARENTHESES>
     ) |
-    t=<NOT> Term() {jjtThis.str = t.image;} |
+    t=<NOT> Term() #Not(1) |
     <OPEN_PARENTHESES> Expression() #Parenteses(1) <CLOSE_PARENTHESES>
 }
 

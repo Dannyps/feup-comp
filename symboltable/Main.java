@@ -4,8 +4,6 @@ import java.io.FileWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Random;
 import java.io.File;
 
@@ -16,6 +14,9 @@ public class Main {
     ClassDeclaration classDeclaration;
     SimpleNode root;
 
+    Integer ifsNumber = 0;
+    Integer whilesNumber = 0;
+
     private FileWriter f = null;
     private int identLevel = 0;
 
@@ -23,7 +24,6 @@ public class Main {
 
     public Main(SimpleNode root) {
         this.root = root;
-        Node child = root.jjtGetChild(0);
     }
 
     /**
@@ -71,6 +71,12 @@ public class Main {
 
     }
 
+    /**
+     * @brief mostra o numero de tabs que é passado por parametro para simular
+     *        identação
+     * 
+     * @param number numero que se pretende da identação
+     */
     private void showPrefix(Integer number) {
         for (Integer i = 0; i < number; i++) {
             System.out.print("\t");
@@ -211,12 +217,11 @@ public class Main {
      * @param descriptor objeto MethodDeclaration ao qual o if pertence
      */
     private void checkIfCondition(Node node, Descriptor descriptor) {
-        SimpleNode[] childs = new SimpleNode[1];
-        childs[0] = (SimpleNode) node.jjtGetChild(0);
-        checkVariableBoolean((MethodDeclaration) descriptor, null, childs, true);
+        SimpleNode child = (SimpleNode) node.jjtGetChild(0);
+        checkVariableBoolean((MethodDeclaration) descriptor, null, child, true);
         toFile("ldc 0");
-        toFile("if_icmpne ifBody");
-        toFile("goto elseBody");
+        toFile("if_icmpne ifBody_" + ifsNumber);
+        toFile("goto elseBody_" + ifsNumber);
     }
 
     /**
@@ -227,9 +232,9 @@ public class Main {
      * @param descriptor objeto MethodDeclaration ao qual o if pertence
      */
     private void checkIfBody(Node node, Descriptor descriptor) {
-        toFile("ifBody:");
+        toFile("ifBody_" + ifsNumber + ":");
         showChilds(node, descriptor);
-        toFile("goto end");
+        toFile("goto end_" + ifsNumber);
     }
 
     /**
@@ -240,9 +245,10 @@ public class Main {
      * @param descriptor objeto MethodDeclaration ao qual o else pertence
      */
     private void checkElseBody(Node node, Descriptor descriptor) {
-        toFile("elseBody:");
+        toFile("elseBody_" + ifsNumber + ":");
         showChilds(node, descriptor);
-        toFile("end:");
+        toFile("end_" + ifsNumber + ":");
+        ifsNumber++;
     }
 
     /**
@@ -283,9 +289,8 @@ public class Main {
      * @param descriptor objeto MethodDeclaration ao qual o while pertence
      */
     private void checkWhileCondition(Node node, Descriptor descriptor) {
-        SimpleNode[] childs = new SimpleNode[1];
-        childs[0] = (SimpleNode) node.jjtGetChild(0);
-        checkVariableBoolean((MethodDeclaration) descriptor, null, childs, true);
+        SimpleNode child = (SimpleNode) node.jjtGetChild(0);
+        checkVariableBoolean((MethodDeclaration) descriptor, null, child, true);
     }
 
     /**
@@ -309,10 +314,8 @@ public class Main {
      */
     private void initiateArrayPosition(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration,
             SimpleNode equal) {
-        SimpleNode[] position = new SimpleNode[1];
-        position[0] = (SimpleNode) equal.jjtGetChild(0).jjtGetChild(0).jjtGetChild(0);
-        SimpleNode[] value = new SimpleNode[1];
-        value[0] = (SimpleNode) equal.jjtGetChild(1);
+        SimpleNode position = (SimpleNode) equal.jjtGetChild(0).jjtGetChild(0).jjtGetChild(0);
+        SimpleNode value = (SimpleNode) equal.jjtGetChild(1);
 
         if (variableDeclaration.getIsClassVariable()) {
             toFile("aload 0");
@@ -320,17 +323,26 @@ public class Main {
                 toFile("getfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
                         + getSignature(variableDeclaration.getType()));
             } catch (Exception e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
         } else {
-            toFile("iload " + variableDeclaration.getIndex());
+            toFile("aload " + variableDeclaration.getIndex());
         }
+
         checkVariableInt(methodDeclaration, variableDeclaration, position);
-        checkVariableInt(methodDeclaration, variableDeclaration, value);
+
+        if (value.jjtGetNumChildren() > 0 && value.jjtGetChild(0) instanceof ASTBracket) {
+            checkVariableIntArray(methodDeclaration, null, value);
+            SimpleNode tempChilds = (SimpleNode) value.jjtGetChild(0).jjtGetChild(0);
+            checkVariableInt(methodDeclaration, variableDeclaration, tempChilds);
+            toFile("iaload");
+        } else {
+            checkVariableInt(methodDeclaration, variableDeclaration, value);
+        }
+
         toFile("iastore");
-        System.out.println("position " + position[0].str + " of array " + variableDeclaration.getName()
-                + " has been initialized with value " + value[0].str);
+        System.out.println("position " + position.str + " of array " + variableDeclaration.getName()
+                + " has been initialized with value " + value.str);
     }
 
     /**
@@ -343,16 +355,14 @@ public class Main {
      */
     private void initiateVariableWithArray(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration,
             SimpleNode bracket) {
-        SimpleNode[] array = new SimpleNode[1];
-        array[0] = bracket;
-        SimpleNode[] position = new SimpleNode[1];
-        position[0] = (SimpleNode) bracket.jjtGetChild(0).jjtGetChild(0);
-        VariableDeclaration var = getVariable(methodDeclaration, array[0].str);
+        SimpleNode array = bracket;
+        SimpleNode position = (SimpleNode) bracket.jjtGetChild(0).jjtGetChild(0);
+        VariableDeclaration var = getVariable(methodDeclaration, array.str);
         if (var.getInitiated()) {
             if (variableDeclaration != null && variableDeclaration.getType().equals("int")) {
                 variableDeclaration.setInitiated(true);
                 System.out.println("Variable " + variableDeclaration.getName() + " has been assigned at position "
-                        + position[0].str + " of array " + var.getName());
+                        + position.str + " of array " + var.getName());
             }
         }
         if (var.getIsClassVariable()) {
@@ -361,7 +371,6 @@ public class Main {
                 toFile("getfield " + classDeclaration.getName() + "/" + var.getName() + " "
                         + getSignature(var.getType()));
             } catch (Exception e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
         } else {
@@ -387,7 +396,8 @@ public class Main {
         VariableDeclaration variableDeclaration = getVariable(methodDeclaration, childs[0].str);
         if (childs[1].str.equals("length")) {
             if (variableDeclaration.getIsArray()) {
-                if (variableDeclaration.getInitiated()) {
+                if (variableDeclaration.getInitiated()
+                        || methodDeclaration.haveParameter(variableDeclaration.getName())) {
 
                     if (variableDeclaration.getIsClassVariable()) {
                         toFile("aload 0");
@@ -395,7 +405,6 @@ public class Main {
                             toFile("getfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
                                     + getSignature(variableDeclaration.getType()));
                         } catch (Exception e1) {
-                            // TODO Auto-generated catch block
                             e1.printStackTrace();
                         }
                     } else {
@@ -466,7 +475,6 @@ public class Main {
                 try {
                     toFile(".field private " + var.getName() + " " + getSignature(var.getType()));
                 } catch (Exception e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
                 toFile("");
@@ -543,7 +551,6 @@ public class Main {
                 toFile(getSignature(classDeclaration.getAllMethods().get(name).getType()).toLowerCase() + "return");
             }
         } catch (Exception e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         this.toFile(".end method");
@@ -569,11 +576,9 @@ public class Main {
                 for (VariableDeclaration parameter : methodDeclaration.getAllParameters()) {
                     stringBuilder.append(getSignature(parameter.getType()));
                 }
-
                 stringBuilder.append(")");
                 stringBuilder.append(getSignature(methodDeclaration.getType()));
             } catch (Exception e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             toFile(stringBuilder.toString());
@@ -616,38 +621,16 @@ public class Main {
                     initiateVariableWithArray(methodDeclaration, null, simpleNode);
                 } else {
                     if (methodDeclaration.getType().equals("int")) {
-                        checkVariableInt(methodDeclaration, null, simpleNodes);
+                        checkVariableInt(methodDeclaration, null, simpleNode);
                         return;
                     } else if (methodDeclaration.getType().equals("boolean")) {
-                        checkVariableBoolean(methodDeclaration, null, simpleNodes, true);
+                        checkVariableBoolean(methodDeclaration, null, simpleNode, true);
                         return;
                     } else if (methodDeclaration.getType().equals("int[]")) {
-                        checkVariableIntArray(methodDeclaration, null, simpleNodes);
+                        checkVariableIntArray(methodDeclaration, null, simpleNode);
                         return;
                     }
                 }
-            } else if (node.jjtGetNumChildren() == 2) {
-                simpleNodes = new SimpleNode[2];
-                simpleNodes[0] = simpleNode;
-                simpleNodes[1] = (SimpleNode) node.jjtGetChild(1);
-
-                VariableDeclaration var = methodDeclaration.getVariable(simpleNodes[0].str);
-
-                if (var.getIsClassVariable()) {
-                    toFile("aload 0");
-                    try {
-                        toFile("getfield " + classDeclaration.getName() + "/" + var.getName() + " "
-                                + getSignature(var.getType()));
-                    } catch (Exception e1) {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
-                    }
-                } else {
-                    toFile("aload " + var.getIndex());
-                }
-                checkVariableIntArray(methodDeclaration, null, simpleNodes);
-                toFile("iaload");
-                return;
             }
         } else {
             String errorMessage = classDeclaration.getName() + " dont have method " + methodName;
@@ -667,7 +650,6 @@ public class Main {
      */
     private void checkNewClassMethod(MethodDeclaration methodDeclaration, Node node,
             VariableDeclaration variableDeclaration) {
-        SimpleNode dot = (SimpleNode) node;
         SimpleNode astNew = (SimpleNode) node.jjtGetChild(0).jjtGetChild(0);
         SimpleNode className = (SimpleNode) astNew.jjtGetChild(0);
         SimpleNode methodName = (SimpleNode) node.jjtGetChild(1);
@@ -688,10 +670,16 @@ public class Main {
         checkMethodAndParameters(methodDeclaration, variableDeclaration, simpleNodes);
     }
 
+    /**
+     * @brief
+     * 
+     * @param methodDeclaration   metodo onde a variavel esta a ser declarada
+     * @param node                no com o inicio do new
+     * @param variableDeclaration variavel a que vai ser atribuido a instanciaçao da
+     *                            class
+     */
     private void checkNewClassWithoutDot(MethodDeclaration methodDeclaration, Node node,
             VariableDeclaration variableDeclaration) {
-        SimpleNode equal = (SimpleNode) node;
-        SimpleNode astNew = (SimpleNode) node.jjtGetChild(0);
         SimpleNode className = (SimpleNode) node.jjtGetChild(1).jjtGetChild(0).jjtGetChild(0);
 
         if (className.str.equals(classDeclaration.getName())) {
@@ -703,6 +691,7 @@ public class Main {
         }
 
         variableDeclaration.setInitiated(true);
+        variableDeclaration.setIsClassInstance(true);
     }
 
     /**
@@ -717,7 +706,6 @@ public class Main {
      * @param descriptor          metodo onde esta a ser usada a funcao
      */
     private void checkMethodWithDot(VariableDeclaration variableDeclaration, Node node, Descriptor descriptor) {
-        System.out.println("Function with dot");
         MethodDeclaration methodDeclaration = (MethodDeclaration) descriptor;
 
         if (node.jjtGetNumChildren() > 0 && node.jjtGetChild(0).jjtGetNumChildren() > 0
@@ -726,7 +714,6 @@ public class Main {
             simpleNodes[0] = (SimpleNode) node;
             checkNewClassMethod(methodDeclaration, simpleNodes[0], variableDeclaration);
         } else {
-            String name = ((SimpleNode) node.jjtGetChild(0)).str;
             SimpleNode[] simpleNodes = new SimpleNode[3];
             simpleNodes[0] = (SimpleNode) node.jjtGetChild(0);
             simpleNodes[1] = (SimpleNode) node.jjtGetChild(1);
@@ -749,104 +736,51 @@ public class Main {
         SimpleNode child = (SimpleNode) node.jjtGetChild(0);
 
         System.out.println("Initiate one variable " + child.str);
-        SimpleNode[] simpleNodes = new SimpleNode[1];
-        simpleNodes[0] = (SimpleNode) node.jjtGetChild(1);
+        SimpleNode simpleNode = (SimpleNode) node.jjtGetChild(1);
         VariableDeclaration variableDeclaration = getVariable(methodDeclaration, child.str);
 
         if (node.jjtGetNumChildren() > 1 && node.jjtGetChild(1).jjtGetNumChildren() > 0
                 && node.jjtGetChild(1).jjtGetChild(0) instanceof ASTNew) {
-            simpleNodes[0] = (SimpleNode) node;
-            checkNewClassWithoutDot(methodDeclaration, simpleNodes[0], variableDeclaration);
-        } else if (simpleNodes[0] instanceof ASTDot) {
-            if (simpleNodes[0].jjtGetNumChildren() > 0 && simpleNodes[0].jjtGetChild(0).jjtGetNumChildren() > 0
-                    && simpleNodes[0].jjtGetChild(0).jjtGetChild(0) instanceof ASTNew) {
-                checkNewClassMethod(methodDeclaration, simpleNodes[0], variableDeclaration);
-                if(((MethodDeclaration) descriptor).getVariable(child.str).getIsClassVariable()) {
-                    toFile("aload 0");
-                    try {
-                        toFile("putfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
-                        + getSignature(variableDeclaration.getType()));
-                    } catch (Exception e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                } else {
-                    toFile("istore " + ((MethodDeclaration) descriptor).getVariable(child.str).getIndex());
-                }
-            } else if (simpleNodes[0].jjtGetNumChildren() == 3) {
-                checkMethodWithDot(variableDeclaration, simpleNodes[0], descriptor);
-                toFile("istore " + ((MethodDeclaration) descriptor).getVariable(child.str).getIndex());
-            } else if (child.jjtGetNumChildren() == 2) {
-                checkArrayLength(child, descriptor);
-            }
+            simpleNode = (SimpleNode) node;
+            checkNewClassWithoutDot(methodDeclaration, simpleNode, variableDeclaration);
         } else {
             if (variableDeclaration.getType().equals("int")) {
-                checkVariableInt(methodDeclaration, variableDeclaration, simpleNodes);
-                if(((MethodDeclaration) descriptor).getVariable(child.str).getIsClassVariable()) {
+                checkVariableInt(methodDeclaration, variableDeclaration, simpleNode);
+                if (getVariable((MethodDeclaration) descriptor, child.str).getIsClassVariable()) {
                     toFile("aload 0");
                     try {
                         toFile("putfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
-                        + getSignature(variableDeclaration.getType()));
+                                + getSignature(variableDeclaration.getType()));
                     } catch (Exception e) {
-                        // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
                 } else {
                     toFile("istore " + ((MethodDeclaration) descriptor).getVariable(child.str).getIndex());
                 }
             } else if (variableDeclaration.getType().equals("boolean")) {
-                checkVariableBoolean(methodDeclaration, variableDeclaration, simpleNodes, false);
-                if(((MethodDeclaration) descriptor).getVariable(child.str).getIsClassVariable()) {
+                checkVariableBoolean(methodDeclaration, variableDeclaration, simpleNode, false);
+                if (((MethodDeclaration) descriptor).getVariable(child.str).getIsClassVariable()) {
                     toFile("aload 0");
                     try {
                         toFile("putfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
-                        + getSignature(variableDeclaration.getType()));
+                                + getSignature(variableDeclaration.getType()));
                     } catch (Exception e) {
-                        // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
                 } else {
                     toFile("istore " + ((MethodDeclaration) descriptor).getVariable(child.str).getIndex());
                 }
             } else if (variableDeclaration.getType().equals("int[]")) {
-                if (simpleNodes[0].jjtGetNumChildren() == 0 && node.jjtGetChild(0).jjtGetNumChildren() == 0) {
-                    toFile("");
-                    if (!variableDeclaration.getInitiated()) {
-                        String errorMessage = "Variable " + variableDeclaration.getName()
-                                + " hasn't been initialized yet";
-                        showError(errorMessage);
-                    }
 
-                    if (variableDeclaration.getIsClassVariable()) {
-                        toFile("aload 0");
-                        try {
-                            toFile("getfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
-                                    + getSignature(variableDeclaration.getType()));
-                        } catch (Exception e1) {
-                            // TODO Auto-generated catch block
-                            e1.printStackTrace();
-                        }
-                    } else {
-                        toFile("aload " + variableDeclaration.getIndex());
-                    }
-                    simpleNodes[0] = (SimpleNode) node.jjtGetChild(1);
-                    checkVariableIntArray(methodDeclaration, variableDeclaration, simpleNodes);
-                    toFile("");
-                } else if (node.jjtGetChild(1).jjtGetNumChildren() > 0) {
-                    if (node.jjtGetChild(1).jjtGetChild(0) instanceof ASTNewArray) {
-                        createArray(methodDeclaration, variableDeclaration,
-                                (SimpleNode) node.jjtGetChild(1).jjtGetChild(0));
-                    }
-                } else if (node.jjtGetChild(0).jjtGetChild(0) instanceof ASTBracket) {
-                    String name = child.str;
-                    variableDeclaration = getVariable(methodDeclaration, name);
+                if (child.jjtGetNumChildren() > 0 && child.jjtGetChild(0) instanceof ASTBracket) {
                     initiateArrayPosition(methodDeclaration, variableDeclaration, (SimpleNode) node);
+
                 } else {
-                    simpleNodes[0] = (SimpleNode) node.jjtGetChild(1);
-                    checkVariableIntArray(methodDeclaration, variableDeclaration, simpleNodes);
+                    checkVariableIntArray(methodDeclaration, variableDeclaration, simpleNode);
                 }
             }
         }
+        variableDeclaration.setInitiated(true);
     }
 
     /**
@@ -867,14 +801,14 @@ public class Main {
 
         if (classDeclaration.getName().equals(simpleNodes[0].str) || simpleNodes[0].str.equals("this")
                 || (var2 != null && var2.getIsClassInstance())) {
-            if (classDeclaration.haveMethod(simpleNodes[1].str)) {
+            System.out.println("******************************************");
 
+            if (classDeclaration.haveMethod(simpleNodes[1].str)) {
                 if (var2 != null && var2.getIsClassInstance()) {
                     toFile("aload " + var2.getIndex());
                 } else {
                     toFile("aload 0");
                 }
-
                 stringBuilder.append("invokevirtual ");
                 stringBuilder.append(classDeclaration.getName());
                 stringBuilder.append("/");
@@ -891,14 +825,10 @@ public class Main {
 
         if (simpleNodes[2] instanceof ASTParenteses) {
             if (simpleNodes[2].jjtGetNumChildren() > 0 && simpleNodes[2].jjtGetChild(0) instanceof ASTDot) {
-                System.out.println("*************************************");
-
                 checkMethodWithDot(variableDeclaration, simpleNodes[2].jjtGetChild(0), methodDeclaration);
 
                 SimpleNode n = (SimpleNode) simpleNodes[2].jjtGetChild(0).jjtGetChild(1);
                 MethodDeclaration m = classDeclaration.getAllMethods().get(n.str);
-
-                System.out.println(n.str);
 
                 try {
                     if (m != null) {
@@ -916,83 +846,28 @@ public class Main {
                     }
                     toFile(stringBuilder.toString());
                 } catch (Exception e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             } else {
-                System.out.println("..............................................");
-
-                if (variableDeclaration != null) {
-                    if (method != null) {
-                        if (variableDeclaration.getType().equals(method.getType())) {
-                            if (method.getAllParameters().size() == simpleNodes[2].jjtGetNumChildren()) {
-                                for (Integer i = 0; i < method.getAllParameters().size(); i++) {
-                                    if (method.getAllParameters().get(i).getType().equals("int")) {
-                                        SimpleNode[] childs = new SimpleNode[1];
-                                        childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
-                                        checkVariableInt(methodDeclaration, null, childs);
-                                    } else if (method.getAllParameters().get(i).getType().equals("boolean")) {
-                                        SimpleNode[] childs = new SimpleNode[1];
-                                        childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
-                                        checkVariableBoolean(methodDeclaration, null, childs, false);
-                                    } else if (method.getAllParameters().get(i).getType().equals("int[]")) {
-                                        SimpleNode[] childs = new SimpleNode[1];
-                                        childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
-                                        checkVariableIntArray(methodDeclaration, null, childs);
-                                    }
-
-                                    try {
-                                        stringBuilder.append(getSignature(method.getAllParameters().get(i).getType()));
-                                    } catch (Exception e) {
-                                        // TODO Auto-generated catch block
-                                        e.printStackTrace();
-                                    }
+                if (method != null && variableDeclaration != null) {
+                    if (variableDeclaration.getType().equals(method.getType())) {
+                        if (method.getAllParameters().size() == simpleNodes[2].jjtGetNumChildren()) {
+                            for (Integer i = 0; i < method.getAllParameters().size(); i++) {
+                                if (method.getAllParameters().get(i).getType().equals("int")) {
+                                    SimpleNode child = (SimpleNode) simpleNodes[2].jjtGetChild(i);
+                                    checkVariableInt(methodDeclaration, null, child);
+                                } else if (method.getAllParameters().get(i).getType().equals("boolean")) {
+                                    SimpleNode child = (SimpleNode) simpleNodes[2].jjtGetChild(i);
+                                    checkVariableBoolean(methodDeclaration, null, child, false);
+                                } else if (method.getAllParameters().get(i).getType().equals("int[]")) {
+                                    SimpleNode child2 = (SimpleNode) simpleNodes[2].jjtGetChild(i);
+                                    checkVariableIntArray(methodDeclaration, null, child2);
                                 }
-                            }
-                        }
-                    } else {
-                        for (Integer i = 0; i < simpleNodes[2].jjtGetNumChildren(); i++) {
-                            SimpleNode child = (SimpleNode) simpleNodes[2].jjtGetChild(i);
-                            VariableDeclaration var = methodDeclaration.getVariable(child.str);
-                            if (var != null) {
-                                if (var.getType().equals("int")) {
-                                    SimpleNode[] childs = new SimpleNode[1];
-                                    childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
-                                    checkVariableInt(methodDeclaration, null, childs);
-                                } else if (var.getType().equals("boolean")) {
-                                    SimpleNode[] childs = new SimpleNode[1];
-                                    childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
-                                    checkVariableBoolean(methodDeclaration, null, childs, false);
-                                } else if (var.getType().equals("int[]")) {
-                                    SimpleNode[] childs = new SimpleNode[1];
-                                    childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
-                                    checkVariableIntArray(methodDeclaration, null, childs);
-                                }
+
                                 try {
-                                    stringBuilder.append(getSignature(var.getType()));
+                                    stringBuilder.append(getSignature(method.getAllParameters().get(i).getType()));
                                 } catch (Exception e) {
-                                    // TODO Auto-generated catch block
                                     e.printStackTrace();
-                                }
-                            } else if (child.str != null && child.str.equals("true")) {
-                                toFile("ldc 1");
-                                stringBuilder.append("I");
-                            } else if (child.str != null && child.str.equals("false")) {
-                                toFile("ldc 0");
-                                stringBuilder.append("I");
-                            } else if (child.op > 0 && child.op <= 4) {
-                                SimpleNode[] childs = new SimpleNode[1];
-                                childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
-                                checkVariableInt(methodDeclaration, null, childs);
-                                stringBuilder.append("I");
-                            } else {
-                                try {
-                                    Integer number = Integer.parseInt(child.str);
-                                    toFile("ldc " + number.toString());
-                                    stringBuilder.append("I");
-                                } catch (Exception e) {
-                                    String errorMessage = "parameter unvailable";
-                                    showError(errorMessage);
                                 }
                             }
                         }
@@ -1000,32 +875,56 @@ public class Main {
                 } else {
                     for (Integer i = 0; i < simpleNodes[2].jjtGetNumChildren(); i++) {
                         SimpleNode child = (SimpleNode) simpleNodes[2].jjtGetChild(i);
-                        VariableDeclaration var = methodDeclaration.getVariable(child.str);
+                        VariableDeclaration var = getVariable(methodDeclaration, child.str);
                         if (var != null) {
                             if (var.getType().equals("int")) {
-                                SimpleNode[] childs = new SimpleNode[1];
-                                childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
-                                checkVariableInt(methodDeclaration, null, childs);
+                                SimpleNode child2 = (SimpleNode) simpleNodes[2].jjtGetChild(i);
+                                checkVariableInt(methodDeclaration, null, child2);
+                                try {
+                                    stringBuilder.append(getSignature(var.getType()));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                             } else if (var.getType().equals("boolean")) {
-                                SimpleNode[] childs = new SimpleNode[1];
-                                childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
-                                checkVariableBoolean(methodDeclaration, null, childs, false);
+                                SimpleNode child2 = (SimpleNode) simpleNodes[2].jjtGetChild(i);
+                                checkVariableBoolean(methodDeclaration, null, child2, false);
+                                try {
+                                    stringBuilder.append(getSignature(var.getType()));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                             } else if (var.getType().equals("int[]")) {
-                                SimpleNode[] childs = new SimpleNode[1];
-                                childs[0] = (SimpleNode) simpleNodes[2].jjtGetChild(i);
-                                checkVariableIntArray(methodDeclaration, null, childs);
+                                if (child.jjtGetNumChildren() > 0 && child.jjtGetChild(0) instanceof ASTBracket) {
+                                    if (var.getIsArray()) {
+                                        SimpleNode x = (SimpleNode) child.jjtGetChild(0).jjtGetChild(0);
+                                        toFile("aload " + var.getIndex());
+                                        checkVariableInt(methodDeclaration, variableDeclaration, x);
+                                        toFile("iaload");
+                                        try {
+                                            stringBuilder.append("I");
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                } else {
+                                    SimpleNode child2 = (SimpleNode) simpleNodes[2].jjtGetChild(i);
+                                    checkVariableIntArray(methodDeclaration, null, child2);
+                                    try {
+                                        stringBuilder.append(getSignature(var.getType()));
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
                             }
-                            try {
-                                stringBuilder.append(getSignature(var.getType()));
-                            } catch (Exception e) {
-                                // TODO Auto-generated catch block
-                                e.printStackTrace();
-                            }
+
                         } else if (child.str != null && child.str.equals("true")) {
                             toFile("ldc 1");
                             stringBuilder.append("I");
                         } else if (child.str != null && child.str.equals("false")) {
                             toFile("ldc 0");
+                            stringBuilder.append("I");
+                        } else if (child.op > 0 && child.op <= 4) {
+                            checkVariableInt(methodDeclaration, null, child);
                             stringBuilder.append("I");
                         } else {
                             try {
@@ -1038,26 +937,30 @@ public class Main {
                             }
                         }
                     }
-
                 }
                 try {
                     stringBuilder.append(")");
                     if (method != null) {
                         stringBuilder.append(getSignature(method.getType()));
                     } else if (variableDeclaration != null) {
-                        stringBuilder.append(getSignature(variableDeclaration.getType()));
+                        if (simpleNodes[1].str.contains("random")) {
+                            stringBuilder.append("I");
+                        } else {
+                            stringBuilder.append(getSignature(variableDeclaration.getType()));
+                        }
                     } else {
-                        stringBuilder.append("V");
+                        if (simpleNodes[1].str.contains("random")) {
+                            stringBuilder.append("I");
+                        } else {
+                            stringBuilder.append("V");
+                        }
                     }
                     toFile(stringBuilder.toString());
                 } catch (Exception e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
-
         }
-
     }
 
     /**
@@ -1069,39 +972,21 @@ public class Main {
      * @param simpleNodes         array com o no do inicio da declaracao do array
      */
     private void checkVariableIntArray(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration,
-            SimpleNode[] simpleNodes) {
-
+            SimpleNode simpleNode) {
         if (variableDeclaration == null) {
-            String name = simpleNodes[0].str;
+            String name = simpleNode.str;
             VariableDeclaration var = getVariable(methodDeclaration, name);
-
-            if (var.getInitiated()) {
-                if (simpleNodes.length == 1) {
-                    if (methodDeclaration.getType().equals(var.getType())) {
-
-                        if (var.getIsClassVariable()) {
-                            toFile("aload 0");
-                            try {
-                                toFile("getfield " + classDeclaration.getName() + "/" + var.getName() + " "
-                                        + getSignature(var.getType()));
-                            } catch (Exception e1) {
-                                // TODO Auto-generated catch block
-                                e1.printStackTrace();
-                            }
-                        } else {
-                            toFile("aload " + variableDeclaration.getIndex());
-                        }
-                        return;
-                    } else {
-                        String errorMessage = "Parameter of method " + methodDeclaration.getName() + " ("
-                                + methodDeclaration.getType() + ") is not of the same type of " + var.getName() + " ("
-                                + var.getType() + ")";
-                        showError(errorMessage);
+            if (var.getInitiated() || methodDeclaration.haveParameter(var.getName())) {
+                if (var.getIsClassVariable()) {
+                    toFile("aload 0");
+                    try {
+                        toFile("getfield " + classDeclaration.getName() + "/" + var.getName() + " "
+                                + getSignature(var.getType()));
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
                     }
-                } else if (simpleNodes.length == 2) {
-                    SimpleNode[] childs = new SimpleNode[1];
-                    childs[0] = simpleNodes[1];
-                    checkVariableInt(methodDeclaration, variableDeclaration, childs);
+                } else {
+                    toFile("aload " + var.getIndex());
                 }
             } else {
                 String errorMessage = "Variable " + var.getName()
@@ -1109,20 +994,17 @@ public class Main {
                 showError(errorMessage);
             }
         } else {
-            String name = simpleNodes[0].str;
+            String name = simpleNode.str;
             VariableDeclaration dest = getVariable(methodDeclaration, name);
-
-            if (dest.getIsArray()) {
+            if (dest != null && dest.getIsArray()) {
                 if (dest.getInitiated()) {
                     variableDeclaration.setInitiated(true);
-
                     if (dest.getIsClassVariable()) {
                         toFile("aload 0");
                         try {
                             toFile("putfield " + classDeclaration.getName() + "/" + dest.getName() + " "
                                     + getSignature(dest.getType()));
                         } catch (Exception e1) {
-                            // TODO Auto-generated catch block
                             e1.printStackTrace();
                         }
                     } else {
@@ -1132,9 +1014,13 @@ public class Main {
                     String errorMessage = "The variable " + name + " dont be initialized";
                     showError(errorMessage);
                 }
-            } else {
-                String errorMessage = "The variable " + name + " is not a array";
-                showError(errorMessage);
+            } else if (simpleNode.jjtGetNumChildren() > 0) {
+                if (simpleNode.jjtGetChild(0) instanceof ASTNewArray) {
+                    createArray(methodDeclaration, variableDeclaration, (SimpleNode) simpleNode.jjtGetChild(0));
+                } else {
+                    String errorMessage = "The variable " + name + " is not a array";
+                    showError(errorMessage);
+                }
             }
         }
     }
@@ -1149,14 +1035,11 @@ public class Main {
      */
     private void createArray(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration,
             SimpleNode newArray) {
-        SimpleNode[] childs = new SimpleNode[1];
-        childs[0] = (SimpleNode) newArray.jjtGetChild(0);
-
+        SimpleNode child = (SimpleNode) newArray.jjtGetChild(0);
         if (variableDeclaration.getIsClassVariable()) {
             toFile("aload 0");
         }
-
-        checkVariableInt(methodDeclaration, null, childs);
+        checkVariableInt(methodDeclaration, null, child);
         variableDeclaration.setInitiated(true);
         toFile("newarray int");
         if (variableDeclaration.getIsClassVariable()) {
@@ -1164,7 +1047,6 @@ public class Main {
                 toFile("putfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
                         + getSignature(variableDeclaration.getType()));
             } catch (Exception e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         } else {
@@ -1185,12 +1067,7 @@ public class Main {
                 variableDeclaration = methodDeclaration.getVariable(name);
             } else if (classDeclaration.haveVariable(name)) {
                 variableDeclaration = classDeclaration.getAllVariables().get(name);
-            } /*
-               * else { String errorMessage = "The variable " + name +
-               * " is not set in the scope of the method " + methodDeclaration.getNode() +
-               * " nor in the scope of the class " + classDeclaration.getNode();
-               * showError(errorMessage); }
-               */
+            }
         }
         return variableDeclaration;
     }
@@ -1204,64 +1081,55 @@ public class Main {
      * @param simpleNodes         no com o inicio das operaçoes
      */
     private void checkVariableInt(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration,
-            SimpleNode[] simpleNodes) {
-        if (simpleNodes.length == 1) {
-            try {
-                Integer number = Integer.parseInt(simpleNodes[0].str);
-                toFile("ldc " + number);
+            SimpleNode simpleNode) {
+        try {
+            Integer number = Integer.parseInt(simpleNode.str);
+            toFile("ldc " + number);
+            if (variableDeclaration != null && !variableDeclaration.getInitiated()) {
+                variableDeclaration.setInitiated(true);
+            }
+            return;
+        } catch (NumberFormatException e) {
+            if (simpleNode.op >= 1 && simpleNode.op <= 4) {
+                System.out.println("Found sub operation " + MyConstants.ops[simpleNode.op - 1]);
+                SimpleNode left = (SimpleNode) simpleNode.jjtGetChild(0);
+                SimpleNode rigth = (SimpleNode) simpleNode.jjtGetChild(1);
+
+                // otimização stack
+                if (left.op != 0 || rigth.op == 0) {
+                    checkVariableInt(methodDeclaration, variableDeclaration, left);
+                    checkVariableInt(methodDeclaration, variableDeclaration, rigth);
+                } else if (rigth.op != 0) {
+                    checkVariableInt(methodDeclaration, variableDeclaration, rigth);
+                    checkVariableInt(methodDeclaration, variableDeclaration, left);
+                }
+                toFileOperation(simpleNode.op - 1);
+            } else if (simpleNode instanceof ASTDot) {
+                if (simpleNode.jjtGetNumChildren() == 2) {
+                    checkArrayLength(simpleNode, methodDeclaration);
+                } else if (simpleNode.jjtGetNumChildren() == 3) {
+                    checkMethodWithDot(variableDeclaration, simpleNode, methodDeclaration);
+                }
+            } else if (simpleNode.jjtGetNumChildren() > 0 && simpleNode.jjtGetChild(0) instanceof ASTBracket) {
+                initiateVariableWithArray(methodDeclaration, variableDeclaration, simpleNode);
+            } else if (simpleNode.jjtGetNumChildren() > 0 && simpleNode.jjtGetChild(0) instanceof ASTParenteses) {
+                SimpleNode child = (SimpleNode) simpleNode.jjtGetChild(0).jjtGetChild(0);
+                checkVariableInt(methodDeclaration, variableDeclaration, child);
+            } else {
+                checkIfExistVariableAndYourType(methodDeclaration, simpleNode.str, "int");
+                VariableDeclaration varDest = methodDeclaration.getVariable(simpleNode.str);
                 if (variableDeclaration != null && !variableDeclaration.getInitiated()) {
                     variableDeclaration.setInitiated(true);
                 }
-                return;
-            } catch (NumberFormatException e) {
-                if (simpleNodes[0].op >= 1 && simpleNodes[0].op <= 4) {
-                    System.out.println("Found sub operation " + MyConstants.ops[simpleNodes[0].op - 1]);
-                    SimpleNode[] left = new SimpleNode[1];
-                    left[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
-                    SimpleNode[] rigth = new SimpleNode[1];
-                    rigth[0] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
-
-                    // otimização stack
-                    if (left[0].op != 0 || rigth[0].op == 0) {
-                        checkVariableInt(methodDeclaration, variableDeclaration, left);
-                        checkVariableInt(methodDeclaration, variableDeclaration, rigth);
-                    } else if (rigth[0].op != 0) {
-                        checkVariableInt(methodDeclaration, variableDeclaration, rigth);
-                        checkVariableInt(methodDeclaration, variableDeclaration, left);
+                if (varDest.getIsClassVariable()) {
+                    try {
+                        toFile("putfield " + classDeclaration.getName() + "/" + varDest.getName() + " "
+                                + getSignature(varDest.getType()));
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
                     }
-                    toFileOperation(simpleNodes[0].op - 1);
-                } else if (simpleNodes[0] instanceof ASTDot) {
-                    if (simpleNodes[0].jjtGetNumChildren() == 2) {
-                        checkArrayLength(simpleNodes[0], methodDeclaration);
-                    } else if (simpleNodes[0].jjtGetNumChildren() == 3) {
-                        checkMethodWithDot(variableDeclaration, simpleNodes[0], methodDeclaration);
-                    }
-                } else if (simpleNodes[0].jjtGetNumChildren() > 0
-                        && simpleNodes[0].jjtGetChild(0) instanceof ASTBracket) {
-                    initiateVariableWithArray(methodDeclaration, variableDeclaration, simpleNodes[0]);
-                } else if (simpleNodes[0].jjtGetNumChildren() > 0
-                        && simpleNodes[0].jjtGetChild(0) instanceof ASTParenteses) {
-                    SimpleNode[] childs = new SimpleNode[1];
-                    childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0).jjtGetChild(0);
-                    checkVariableInt(methodDeclaration, variableDeclaration, childs);
                 } else {
-                    checkIfExistVariableAndYourType(methodDeclaration, simpleNodes[0].str, "int");
-                    VariableDeclaration varDest = methodDeclaration.getVariable(simpleNodes[0].str);
-                    if (variableDeclaration != null && !variableDeclaration.getInitiated()) {
-                        variableDeclaration.setInitiated(true);
-                    }
-
-                    if (varDest.getIsClassVariable()) {
-                        try {
-                            toFile("putfield " + classDeclaration.getName() + "/" + varDest.getName() + " "
-                                    + getSignature(varDest.getType()));
-                        } catch (Exception e1) {
-                            // TODO Auto-generated catch block
-                            e1.printStackTrace();
-                        }
-                    } else {
-                        toFile("iload " + varDest.getIndex());
-                    }
+                    toFile("iload " + varDest.getIndex());
                 }
             }
         }
@@ -1302,79 +1170,75 @@ public class Main {
      * @param simpleNodes         no com o inicio das operaçoes
      */
     private void checkVariableBoolean(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration,
-            SimpleNode[] simpleNodes, Boolean comparation) {
-        if (simpleNodes.length == 1) {
-            if (simpleNodes[0].str != null && simpleNodes[0].str.equals("true")) {
-                if (variableDeclaration != null) {
-                    variableDeclaration.setInitiated(true);
-                } else {
-                    String errorMessage = "Is NULL";
-                    showError(errorMessage);
-                }
-                toFile("ldc 1");
-            } else if (simpleNodes[0].str != null && simpleNodes[0].str.equals("false")) {
-                if (variableDeclaration != null) {
-                    variableDeclaration.setInitiated(true);
-                } else {
-                    String errorMessage = "Is NULL";
-                    showError(errorMessage);
-                }
-                toFile("ldc 0");
-            } else if (simpleNodes[0] instanceof ASTLess) {
-                System.out.println("Found sub operation " + MyConstants.ops[simpleNodes[0].op - 1]);
-                SimpleNode[] childs = new SimpleNode[1];
-                childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
-                checkVariableInt(methodDeclaration, variableDeclaration, childs);
-
-                childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
-                checkVariableInt(methodDeclaration, variableDeclaration, childs);
-
-                Random random = new Random();
-
-                Long time = System.currentTimeMillis();
-                Integer t = random.nextInt(1000);
-                String x = String.valueOf(time * t);
-
-                toFile("if_icmplt isTrue_" + x);
-                toFile("goto isFalse_" + x);
-
-                toFile("isTrue_" + x + ":");
-                toFile("ldc 1");
-                toFile("goto endLess_" + x);
-                toFile("isFalse_" + x + ":");
-                toFile("ldc 0");
-                toFile("endLess_" + x + ":");
-
-            } else if (simpleNodes[0].op.equals(MyConstants.AND)) {
-                SimpleNode[] childs = new SimpleNode[1];
-                childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0);
-                checkVariableBoolean(methodDeclaration, variableDeclaration, childs, comparation);
-
-                childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(1);
-                checkVariableBoolean(methodDeclaration, variableDeclaration, childs, comparation);
-
-                toFile("iand");
-
-            } else if (simpleNodes[0] instanceof ASTDot) {
-                if (simpleNodes[0].jjtGetNumChildren() == 2) {
-                    checkArrayLength(simpleNodes[0], methodDeclaration);
-                } else if (simpleNodes[0].jjtGetNumChildren() == 3) {
-
-                }
-                checkMethodWithDot(null, simpleNodes[0], methodDeclaration);
-            } else if (simpleNodes[0].jjtGetNumChildren() > 0
-                    && simpleNodes[0].jjtGetChild(0) instanceof ASTParenteses) {
-                SimpleNode[] childs = new SimpleNode[1];
-                childs[0] = (SimpleNode) simpleNodes[0].jjtGetChild(0).jjtGetChild(0);
-                checkVariableBoolean(methodDeclaration, variableDeclaration, childs, comparation);
-            } else {
-                checkIfExistVariableAndYourType(methodDeclaration, simpleNodes[0].str, "boolean");
-                VariableDeclaration varDest = methodDeclaration.getVariable(simpleNodes[0].str);
-                if (variableDeclaration != null && !variableDeclaration.getInitiated()) {
-                    variableDeclaration.setInitiated(true);
-                }
-                toFile("iload " + varDest.getIndex());
+            SimpleNode simpleNode, Boolean comparation) {
+        if (simpleNode.str != null && simpleNode.str.equals("true")) {
+            if (variableDeclaration != null) {
+                variableDeclaration.setInitiated(true);
             }
+            toFile("ldc 1");
+        } else if (simpleNode.str != null && simpleNode.str.equals("false")) {
+            if (variableDeclaration != null) {
+                variableDeclaration.setInitiated(true);
+            } else {
+                String errorMessage = "Is NULL";
+                showError(errorMessage);
+            }
+            toFile("ldc 0");
+        } else if (simpleNode instanceof ASTLess) {
+            System.out.println("Found sub operation " + MyConstants.ops[simpleNode.op - 1]);
+            SimpleNode child = (SimpleNode) simpleNode.jjtGetChild(0);
+            checkVariableInt(methodDeclaration, variableDeclaration, child);
+
+            child = (SimpleNode) simpleNode.jjtGetChild(1);
+            checkVariableInt(methodDeclaration, variableDeclaration, child);
+
+            Random random = new Random();
+
+            Long time = System.currentTimeMillis();
+            Integer t = random.nextInt(1000);
+            String x = String.valueOf(time * t);
+
+            toFile("if_icmplt isTrue_" + x);
+            toFile("goto isFalse_" + x);
+
+            toFile("isTrue_" + x + ":");
+            toFile("ldc 1");
+            toFile("goto endLess_" + x);
+            toFile("isFalse_" + x + ":");
+            toFile("ldc 0");
+            toFile("endLess_" + x + ":");
+
+        } else if (simpleNode.op.equals(MyConstants.AND)) {
+            SimpleNode child = (SimpleNode) simpleNode.jjtGetChild(0);
+            checkVariableBoolean(methodDeclaration, variableDeclaration, child, comparation);
+
+            child = (SimpleNode) simpleNode.jjtGetChild(1);
+            checkVariableBoolean(methodDeclaration, variableDeclaration, child, comparation);
+
+            toFile("iand");
+
+        } else if (simpleNode instanceof ASTDot) {
+            if (simpleNode.jjtGetNumChildren() == 2) {
+                checkArrayLength(simpleNode, methodDeclaration);
+            } else if (simpleNode.jjtGetNumChildren() == 3) {
+                checkMethodWithDot(variableDeclaration, simpleNode, methodDeclaration);
+            }
+        } else if (simpleNode.jjtGetNumChildren() > 0 && simpleNode.jjtGetChild(0) instanceof ASTParenteses) {
+            SimpleNode child = (SimpleNode) simpleNode.jjtGetChild(0).jjtGetChild(0);
+            checkVariableBoolean(methodDeclaration, variableDeclaration, child, comparation);
+        } else if (simpleNode.jjtGetNumChildren() > 0 && simpleNode.jjtGetChild(0) instanceof ASTNot) {
+            System.out.println("here");
+            simpleNode = (SimpleNode) simpleNode.jjtGetChild(0).jjtGetChild(0);
+            checkVariableBoolean(methodDeclaration, variableDeclaration, simpleNode, comparation);
+            toFile("ldc 0");
+            toFile("iand");
+        } else {
+            checkIfExistVariableAndYourType(methodDeclaration, simpleNode.str, "boolean");
+            VariableDeclaration varDest = methodDeclaration.getVariable(simpleNode.str);
+            if (variableDeclaration != null && !variableDeclaration.getInitiated()) {
+                variableDeclaration.setInitiated(true);
+            }
+            toFile("iload " + varDest.getIndex());
         }
     }
 
@@ -1484,7 +1348,7 @@ public class Main {
     }
 
     /**
-     * @brief fecha o ficheir onde forem gerados os bytecodes
+     * @brief fecha o ficheiro onde forem gerados os bytecodes
      */
     private void closeFile() {
         try {
@@ -1534,15 +1398,11 @@ public class Main {
             break;
         default:
             if (returnType.substring(returnType.length() - 2).equals("[]")) {
-                // this is an array type
                 return "[" + getSignature(returnType.substring(0, returnType.length() - 2));
             } else {
-                // TODO might be a Fully qualiffied class name
                 return "L";
             }
-            // throw new Exception("The passed returnType is not valid! Got " + returnType);
         }
-
         return ret;
     }
 }
