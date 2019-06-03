@@ -22,6 +22,49 @@ class Lazysort {
         return true;
     }
 
+    public int partition(int[] L, int lo, int hi) {
+        int p;
+        int i;
+        int j;
+        int tmp;
+
+        p = L[hi];
+        i = lo;
+        j = lo;
+
+        while (j < hi) {
+            if (L[j] < p) {
+                tmp = L[i];
+                L[i] = L[j];
+                L[j] = tmp;
+
+                i = i + 1;
+            } else {}
+
+            j = j + 1;
+        }
+
+        tmp = L[i];
+        L[i] = L[hi];
+        L[hi] = tmp;
+
+        return i;
+
+    }
+
+        public boolean quicksort2(int[] L, int lo, int hi) {
+        int p;
+
+        if (lo < hi) {
+            p = this.partition(L, lo, hi);
+
+            this.quicksort2(L, lo, p - 1);
+            this.quicksort2(L, p + 1, hi);
+        } else {}
+
+        return true;
+    }
+
     public boolean quicksort(int[] L) {
         boolean lazy;
         if ( MathUtils.random(0, 5) < 4 ) {
@@ -36,7 +79,7 @@ class Lazysort {
             lazy = !lazy;
         }
         else {
-            lazy = this.quicksort(L, 0, L.length - 1);
+            lazy = this.quicksort2(L, 0, L.length - 1);
         }
         
         return lazy;

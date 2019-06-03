@@ -129,7 +129,7 @@ public class Main {
                 initiateVariable(child, descriptor);
             } else if (child instanceof ASTDot) {
                 if (child.jjtGetNumChildren() == 3) {
-                    checkMethodWithDot(null, child, descriptor);
+                    checkMethodWithDot(null, child, descriptor, true);
                 } else if (child.jjtGetNumChildren() == 2) {
                     checkArrayLength(child, descriptor);
                 }
@@ -218,7 +218,7 @@ public class Main {
      */
     private void checkIfCondition(Node node, Descriptor descriptor) {
         SimpleNode child = (SimpleNode) node.jjtGetChild(0);
-        checkVariableBoolean((MethodDeclaration) descriptor, null, child, true);
+        checkVariableBoolean((MethodDeclaration) descriptor, null, child, false);
         toFile("ldc 0");
         toFile("if_icmpne ifBody_" + ifsNumber);
         toFile("goto elseBody_" + ifsNumber);
@@ -290,7 +290,7 @@ public class Main {
      */
     private void checkWhileCondition(Node node, Descriptor descriptor) {
         SimpleNode child = (SimpleNode) node.jjtGetChild(0);
-        checkVariableBoolean((MethodDeclaration) descriptor, null, child, true);
+        checkVariableBoolean((MethodDeclaration) descriptor, null, child, false);
     }
 
     /**
@@ -615,7 +615,7 @@ public class Main {
                             checkArrayLength(simpleNode, methodDeclaration);
                         }
                     } else if (node.jjtGetChild(0).jjtGetNumChildren() == 3) {
-                        checkMethodWithDot(null, simpleNode, methodDeclaration);
+                        checkMethodWithDot(null, simpleNode, methodDeclaration, false);
                     }
                 } else if (node.jjtGetChild(0) instanceof ASTBracket) {
                     initiateVariableWithArray(methodDeclaration, null, simpleNode);
@@ -667,7 +667,7 @@ public class Main {
         simpleNodes[1] = methodName;
         simpleNodes[2] = parenteses;
 
-        checkMethodAndParameters(methodDeclaration, variableDeclaration, simpleNodes);
+        checkMethodAndParameters(methodDeclaration, variableDeclaration, simpleNodes, false);
     }
 
     /**
@@ -705,7 +705,7 @@ public class Main {
      *                            metodo e os parametros do metodo
      * @param descriptor          metodo onde esta a ser usada a funcao
      */
-    private void checkMethodWithDot(VariableDeclaration variableDeclaration, Node node, Descriptor descriptor) {
+    private void checkMethodWithDot(VariableDeclaration variableDeclaration, Node node, Descriptor descriptor, Boolean needPop) {
         MethodDeclaration methodDeclaration = (MethodDeclaration) descriptor;
 
         if (node.jjtGetNumChildren() > 0 && node.jjtGetChild(0).jjtGetNumChildren() > 0
@@ -720,7 +720,7 @@ public class Main {
             simpleNodes[1].str += "()";
             simpleNodes[2] = (SimpleNode) node.jjtGetChild(2);
 
-            checkMethodAndParameters(methodDeclaration, variableDeclaration, simpleNodes);
+            checkMethodAndParameters(methodDeclaration, variableDeclaration, simpleNodes, needPop);
         }
     }
 
@@ -794,7 +794,7 @@ public class Main {
      *                            passados ao metodo
      */
     private void checkMethodAndParameters(MethodDeclaration methodDeclaration, VariableDeclaration variableDeclaration,
-            SimpleNode[] simpleNodes) {
+            SimpleNode[] simpleNodes, Boolean needPop) {
         StringBuilder stringBuilder = new StringBuilder();
         VariableDeclaration var2 = getVariable(methodDeclaration, simpleNodes[0].str);
         MethodDeclaration method = classDeclaration.getAllMethods().get(simpleNodes[1].str);
@@ -825,7 +825,7 @@ public class Main {
 
         if (simpleNodes[2] instanceof ASTParenteses) {
             if (simpleNodes[2].jjtGetNumChildren() > 0 && simpleNodes[2].jjtGetChild(0) instanceof ASTDot) {
-                checkMethodWithDot(variableDeclaration, simpleNodes[2].jjtGetChild(0), methodDeclaration);
+                checkMethodWithDot(variableDeclaration, simpleNodes[2].jjtGetChild(0), methodDeclaration, false);
 
                 SimpleNode n = (SimpleNode) simpleNodes[2].jjtGetChild(0).jjtGetChild(1);
                 MethodDeclaration m = classDeclaration.getAllMethods().get(n.str);
@@ -959,6 +959,10 @@ public class Main {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            }
+            if(needPop == true && !stringBuilder.toString().substring(stringBuilder.toString().length() - 1, stringBuilder.toString().length()).equals("V")) {
+                toFile("pop");
+
             }
         }
     }
@@ -1108,7 +1112,7 @@ public class Main {
                 if (simpleNode.jjtGetNumChildren() == 2) {
                     checkArrayLength(simpleNode, methodDeclaration);
                 } else if (simpleNode.jjtGetNumChildren() == 3) {
-                    checkMethodWithDot(variableDeclaration, simpleNode, methodDeclaration);
+                    checkMethodWithDot(variableDeclaration, simpleNode, methodDeclaration, false);
                 }
             } else if (simpleNode.jjtGetNumChildren() > 0 && simpleNode.jjtGetChild(0) instanceof ASTBracket) {
                 initiateVariableWithArray(methodDeclaration, variableDeclaration, simpleNode);
@@ -1221,7 +1225,7 @@ public class Main {
             if (simpleNode.jjtGetNumChildren() == 2) {
                 checkArrayLength(simpleNode, methodDeclaration);
             } else if (simpleNode.jjtGetNumChildren() == 3) {
-                checkMethodWithDot(variableDeclaration, simpleNode, methodDeclaration);
+                checkMethodWithDot(variableDeclaration, simpleNode, methodDeclaration, comparation);
             }
         } else if (simpleNode.jjtGetNumChildren() > 0 && simpleNode.jjtGetChild(0) instanceof ASTParenteses) {
             SimpleNode child = (SimpleNode) simpleNode.jjtGetChild(0).jjtGetChild(0);
