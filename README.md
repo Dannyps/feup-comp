@@ -53,7 +53,17 @@ And finally:
 
 ## Dealing with syntatic errors
 
+The compiler has the ability to detect syntatic errors, i.e., unknown tokens which can't be found in Java-- grammar and sequences of tokens which are invalid, such as missing an expected `(` in a `if` statement. The errors are reported, and it makes an attempt to move forward by consuming tokens until it reaches a stable point, which is no longer affected by the detected error. Therefore, it attempts to report more than a single error.
+
 ## Semantic Analysis
+
+Several semantic errors are detectable and reported. Below is a list of errors detected:
+
+- Duplicated identifiers in the same scope such as classes names, method names, variable indentifiers at different scopes (repeated fields, local variables, collision with local variables and parameters, ...)
+- Types mismatches such as method return type being accordingly to method declaration
+- Variables are instantiated before used
+- Expressions evaluate to the derired data type
+- Others...
 
 ## Intermediate Representation (IRs)
 
