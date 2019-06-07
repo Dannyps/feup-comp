@@ -4,12 +4,12 @@
 
 | Name | Student Number | Grade (0-20) | Contribution (0-100%) |
 | ---- | -------------- | ------------ | --------------------- |
-| Daniel Silva | 201503212 | ? | ? |
-| Fábio Araújo | 201607944 | ? | 25% |
-| Fábio Gaspar | 201503823 | ? | ? |
-| João Agulha | 201607930 | ? | ? |
+| Daniel Silva | 201503212 | 16 | 25% |
+| Fábio Araújo | 201607944 | 16 | 25% |
+| Fábio Gaspar | 201503823 | 16 | 25% |
+| João Agulha | 201607930 | 16 | 25% |
 
-**Global project grade: ?**
+**Global project grade: 16**
 
 ## Summary
 
