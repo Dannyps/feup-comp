@@ -5,7 +5,7 @@
 | Name | Student Number | Grade (0-20) | Contribution (0-100%) |
 | ---- | -------------- | ------------ | --------------------- |
 | Daniel Silva | 201503212 | ? | ? |
-| Fábio Araújo | 201607944 | ? | ? |
+| Fábio Araújo | 201607944 | ? | 25% |
 | Fábio Gaspar | 201503823 | ? | ? |
 | João Agulha | 201607930 | ? | ? |
 
