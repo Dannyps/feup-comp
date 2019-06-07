@@ -79,6 +79,17 @@ Despite these difficulties, we have implemented this functionality with great co
 
 ### Task Distribution
 
+ - initial parsing: equal contribution
+ - error treatment: Daniel Silva
+ - syntax tree: Fábio Gaspar, Fábio Araújo, João Agulha
+ - Symbol tables: Fábio Araújo and João Agulha
+ - Jasmin function and arithm: Daniel Silva, Fábio Gaspar
+ - Jasmin for Conditions and Loops: equal contribution
+ - Jasmin for arrays: Fábio Araújo
 ### Pros
+ - documentation on code
+ - easy to use (simple commands)
 
 ### Cons
+ - no optimizations
+ - condensed code
