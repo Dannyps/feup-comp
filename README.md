@@ -57,7 +57,23 @@ And finally:
 
 ## Intermediate Representation (IRs)
 
+There are two IRs in our project:
+
+### High Level Intermediate Representation
+This is composed by the Symbol Table. The ST can be considered a HLIR as it is accurate, i.e., it is capable of representing the source code without loss of information. The implemented SymbolTable is stored using a series of Classes, each representing a possilbe kind of node.
+
+
+### Low Level Intermediate Representation
+The LLIR is the jasmin file's contents. We can consider these a LLIR as they contain the instructions derived from the aforementioned HLIR. 
+
+
 ## Code Generation
+
+We started by creating a class for encapsulating the code generation responsability, but ended up disregarding it as we realized that there was a lot of repeated code. This way, we creating a single class for both code generation and Symbol Table generation.
+This may seem awkard, but it is in fact a way of speeding up the compilation process.
+Code generation was a challenging and dificult marker in this project. Firstly, because we didn't have any past experience with Java Bytecodes, and secondly because we'd never generated code from a Symbol Table.
+
+Despite these difficulties, we have implemented this functionality with great courage and confidence. The only thing sin the `j--` specification that we were unable to implement in terms of code generation was extending another class.
 
 ## Overview
 
