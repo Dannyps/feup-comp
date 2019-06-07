@@ -13,6 +13,10 @@
 
 ## Summary
 
+The purpose of this project is the development of a compiler written in Java, making use of _JJTree_ for code parsing and tree generation and _Jasmin_ for creating the bytecodes.
+The project was split into several stages that essentially correspond to steps in the flow of a real compiler.
+We have attained the basic functionality goal. Moreover, the feedback we received throughout each checkpoint has been enough to let us know that we developed the project the right way.
+
 ## Usage
 
 ### The following examples were successfully tested:
@@ -26,17 +30,10 @@
 
 
 #### Note:
- The `life.jmm` is parsed successfully, and has its bytecodes generated, but does not run correctly.
+ - The `life.jmm` is parsed successfully, and has its bytecodes generated, but does not run correctly.
+ - No optimizations were implemented. As such, no options (e.g. -r or -o) are available.
 
-para correr o programa basta executar os comandos :
-
-    sh compile.sh (file .jmm)
-    java -jar jasmin.jar output/(file.jmm)
-    java (file.jmm)
-
-
-No optimizations were implementes. As such, no options (e.g. -r or -o) are available.
-
+### Parsing and jasmin file generation:
 
 Use the script `compile.sh` and specify the Java-- file (**.jmm**) to be parsed.
 
@@ -53,16 +50,6 @@ After a .j file has been created by this compiler, Jasmin must be used to create
 And finally: 
 `java <classname>`
 
-In order to make the program print an int variable in a method, you can add the code bellow to the `<filename.j>` file before running the java program. It must be added right before the `return` statement. The first defined variable will be printed.
-
-``` jasmin
-; push java.lang.System.out (type PrintStream)
-getstatic java/lang/System/out Ljava/io/PrintStream;
-; load the first defined variable in this method
-iload 1
-; invoke println
-invokevirtual java/io/PrintStream/println(I)V
-```
 
 ## Dealing with syntatic errors
 
