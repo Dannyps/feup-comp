@@ -4,7 +4,7 @@
 
 | Name | Student Number | Grade (0-20) | Contribution (0-100%) |
 | ---- | -------------- | ------------ | --------------------- |
-| Daniel Silva | 201503212 | ? | ? |
+| Daniel Silva | 201503212 | ? | 25% |
 | Fábio Araújo | 201607944 | ? | 25% |
 | Fábio Gaspar | 201503823 | ? | ? |
 | João Agulha | 201607930 | ? | ? |
@@ -15,16 +15,18 @@
 
 ## Usage
 
-### O programa foi testado com os ficheiros na pasta samples/valid 
-    MonteCarloPi.jmm
-    enunciado.jmm
-    FindMaximum.jmm
-    QuickSort.jmm
-    LazySort.jmm
+### The following examples were successfully tested:
 
-e todos funcionam.
+#### samples/valid/ 
+    - MonteCarloPi.jmm
+    - enunciado.jmm
+    - FindMaximum.jmm
+    - QuickSort.jmm
+    - LazySort.jmm
 
-O ficheiro life.jmm embora compile e gera os byteCodes nao funciona corretamente.
+
+#### Note:
+ The `life.jmm` is parsed successfully, and has its bytecodes generated, but does not run correctly.
 
 para correr o programa basta executar os comandos :
 
@@ -33,7 +35,7 @@ para correr o programa basta executar os comandos :
     java (file.jmm)
 
 
-as otimizações nao foram realizadas, dai nao se ter que inserir nenhuma opção (-r ou -o)
+No optimizations were implementes. As such, no options (e.g. -r or -o) are available.
 
 
 Use the script `compile.sh` and specify the Java-- file (**.jmm**) to be parsed.
