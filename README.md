@@ -1,6 +1,27 @@
 # Usage
 
-## O programa foi testado com o ficheiro MonteCarloPi.jmm disponivel na pasta samples/valid
+## O programa foi testado com os ficheiros na pasta samples/valid 
+    MonteCarloPi.jmm
+    enunciado.jmm
+    FindMaximum.jmm
+    QuickSort.jmm
+    LazySort.jmm
+
+e todos funcionam.
+
+O ficheiro life.jmm embora compile e gera os byteCodes nao funciona corretamente.
+
+para correr o programa basta executar os comandos :
+
+    sh compile.sh (file .jmm)
+    java -jar jasmin.jar output/(file.jmm)
+    java (file.jmm)
+
+
+as otimizações nao foram realizadas, dai nao se ter que inserir nenhuma opção (-r ou -o)
+
+
+
 
 Use the script `compile.sh` and specify the Java-- file (**.jmm**) to be parsed.
 

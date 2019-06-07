@@ -624,7 +624,7 @@ public class Main {
                         checkVariableInt(methodDeclaration, null, simpleNode);
                         return;
                     } else if (methodDeclaration.getType().equals("boolean")) {
-                        checkVariableBoolean(methodDeclaration, null, simpleNode, true);
+                        checkVariableBoolean(methodDeclaration, null, simpleNode, false);
                         return;
                     } else if (methodDeclaration.getType().equals("int[]")) {
                         checkVariableIntArray(methodDeclaration, null, simpleNode);
@@ -714,13 +714,23 @@ public class Main {
             simpleNodes[0] = (SimpleNode) node;
             checkNewClassMethod(methodDeclaration, simpleNodes[0], variableDeclaration);
         } else {
+            Boolean needAnd = false;
             SimpleNode[] simpleNodes = new SimpleNode[3];
-            simpleNodes[0] = (SimpleNode) node.jjtGetChild(0);
+            if(node.jjtGetChild(0).jjtGetNumChildren() > 0 && node.jjtGetChild(0).jjtGetChild(0) instanceof ASTNot) {
+                System.out.println("*****************************");
+                simpleNodes[0] = (SimpleNode) node.jjtGetChild(0).jjtGetChild(0).jjtGetChild(0);
+                needAnd = true;
+            } else {
+                simpleNodes[0] = (SimpleNode) node.jjtGetChild(0);
+            }
             simpleNodes[1] = (SimpleNode) node.jjtGetChild(1);
             simpleNodes[1].str += "()";
             simpleNodes[2] = (SimpleNode) node.jjtGetChild(2);
-
             checkMethodAndParameters(methodDeclaration, variableDeclaration, simpleNodes, needPop);
+            if(needAnd) {
+                toFile("ldc 0");
+                toFile("iand");
+            }
         }
     }
 
@@ -801,8 +811,6 @@ public class Main {
 
         if (classDeclaration.getName().equals(simpleNodes[0].str) || simpleNodes[0].str.equals("this")
                 || (var2 != null && var2.getIsClassInstance())) {
-            System.out.println("******************************************");
-
             if (classDeclaration.haveMethod(simpleNodes[1].str)) {
                 if (var2 != null && var2.getIsClassInstance()) {
                     toFile("aload " + var2.getIndex());
@@ -1021,6 +1029,8 @@ public class Main {
             } else if (simpleNode.jjtGetNumChildren() > 0) {
                 if (simpleNode.jjtGetChild(0) instanceof ASTNewArray) {
                     createArray(methodDeclaration, variableDeclaration, (SimpleNode) simpleNode.jjtGetChild(0));
+                } else if(simpleNode instanceof ASTDot) {
+                    checkMethodWithDot(variableDeclaration, simpleNode, methodDeclaration, false);
                 } else {
                     String errorMessage = "The variable " + name + " is not a array";
                     showError(errorMessage);
@@ -1121,7 +1131,7 @@ public class Main {
                 checkVariableInt(methodDeclaration, variableDeclaration, child);
             } else {
                 checkIfExistVariableAndYourType(methodDeclaration, simpleNode.str, "int");
-                VariableDeclaration varDest = methodDeclaration.getVariable(simpleNode.str);
+                VariableDeclaration varDest = getVariable(methodDeclaration, simpleNode.str);
                 if (variableDeclaration != null && !variableDeclaration.getInitiated()) {
                     variableDeclaration.setInitiated(true);
                 }
@@ -1212,7 +1222,7 @@ public class Main {
             toFile("ldc 0");
             toFile("endLess_" + x + ":");
 
-        } else if (simpleNode.op.equals(MyConstants.AND)) {
+        } else if (simpleNode instanceof ASTAnd) {
             SimpleNode child = (SimpleNode) simpleNode.jjtGetChild(0);
             checkVariableBoolean(methodDeclaration, variableDeclaration, child, comparation);
 
