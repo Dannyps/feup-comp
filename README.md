@@ -87,6 +87,8 @@ Despite these difficulties, we have implemented this functionality with great co
 
 ## Overview
 
+No external tools/libraries were used except for the ones already mentioned: JJTree and Jasmin.
+
 ### Task Distribution
 
  - initial parsing: equal contribution
