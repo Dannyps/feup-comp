@@ -90,7 +90,7 @@ public class Main {
      * @param descriptor é uma class ou um método do qual estamos a analisar os seu
      *                   filhos
      */
-    private void showChilds(Node node, Descriptor descriptor) {
+    private void showChilds(Node node, Descriptor descriptor, Boolean ifInside) {
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             Node child = node.jjtGetChild(i);
 
@@ -134,7 +134,7 @@ public class Main {
                     checkArrayLength(child, descriptor);
                 }
             } else if (child instanceof ASTIf) {
-                checkIf(child, descriptor);
+                checkIf(child, descriptor, ifInside);
             } else if (child instanceof ASTWhile) {
                 checkWhile(child, descriptor);
             }
@@ -196,17 +196,26 @@ public class Main {
      * @param node       nó com o inicio da declaração de um if
      * @param descriptor objeto MethodDeclaration ao qual o if pertence
      */
-    private void checkIf(Node node, Descriptor descriptor) {
+    private void checkIf(Node node, Descriptor descriptor, Boolean ifInside) {
         if (node.jjtGetNumChildren() == 3 && node instanceof ASTIf) {
+            toFile("");
+            Integer x = ifsNumber;
+            if(ifInside) {
+                x++;
+            }
+
             if (node.jjtGetChild(0) instanceof ASTIfCondition) {
-                checkIfCondition(node.jjtGetChild(0), descriptor);
+                checkIfCondition(node.jjtGetChild(0), descriptor, x);
             }
             if (node.jjtGetChild(1) instanceof ASTIfBody) {
-                checkIfBody(node.jjtGetChild(1), descriptor);
+                checkIfBody(node.jjtGetChild(1), descriptor, x);
             }
             if (node.jjtGetChild(2) instanceof ASTElseBody) {
-                checkElseBody(node.jjtGetChild(2), descriptor);
+                checkElseBody(node.jjtGetChild(2), descriptor, x);
             }
+            ifsNumber++;
+
+            toFile("");
         }
     }
 
@@ -216,12 +225,12 @@ public class Main {
      * @param node       nó com o inicio da condição do if
      * @param descriptor objeto MethodDeclaration ao qual o if pertence
      */
-    private void checkIfCondition(Node node, Descriptor descriptor) {
+    private void checkIfCondition(Node node, Descriptor descriptor, Integer number) {
         SimpleNode child = (SimpleNode) node.jjtGetChild(0);
         checkVariableBoolean((MethodDeclaration) descriptor, null, child, false);
         toFile("ldc 0");
-        toFile("if_icmpne ifBody_" + ifsNumber);
-        toFile("goto elseBody_" + ifsNumber);
+        toFile("if_icmpne ifBody_" + number);
+        toFile("goto elseBody_" + number);
     }
 
     /**
@@ -231,10 +240,10 @@ public class Main {
      * @param node       nó com o inicio do corpo do if
      * @param descriptor objeto MethodDeclaration ao qual o if pertence
      */
-    private void checkIfBody(Node node, Descriptor descriptor) {
-        toFile("ifBody_" + ifsNumber + ":");
-        showChilds(node, descriptor);
-        toFile("goto end_" + ifsNumber);
+    private void checkIfBody(Node node, Descriptor descriptor, Integer number) {
+        toFile("ifBody_" + number + ":");
+        showChilds(node, descriptor, true);
+        toFile("goto end_" + number);
     }
 
     /**
@@ -244,11 +253,10 @@ public class Main {
      * @param node       nó com o inicio do corpo do else
      * @param descriptor objeto MethodDeclaration ao qual o else pertence
      */
-    private void checkElseBody(Node node, Descriptor descriptor) {
-        toFile("elseBody_" + ifsNumber + ":");
-        showChilds(node, descriptor);
-        toFile("end_" + ifsNumber + ":");
-        ifsNumber++;
+    private void checkElseBody(Node node, Descriptor descriptor, Integer number) {
+        toFile("elseBody_" + number + ":");
+        showChilds(node, descriptor, true);
+        toFile("end_" + number + ":");
     }
 
     /**
@@ -259,6 +267,7 @@ public class Main {
      * @param descriptor objeto MethodDeclaration ao qual o while pertence
      */
     private void checkWhile(Node node, Descriptor descriptor) {
+        toFile("");
         Random random = new Random();
 
         Long time = System.currentTimeMillis();
@@ -280,6 +289,8 @@ public class Main {
             }
             toFile("endWhile:");
         }
+        toFile("");
+
     }
 
     /**
@@ -300,7 +311,7 @@ public class Main {
      * @param descriptor objeto MethodDeclaration ao qual o if pertence
      */
     private void checkWhileBody(Node node, Descriptor descriptor) {
-        showChilds(node, descriptor);
+        showChilds(node, descriptor, false);
     }
 
     /**
@@ -448,7 +459,7 @@ public class Main {
         this.toFile(".super java/lang/Object"); // TODO check if class extends
         this.toFile("");
 
-        showChilds(node, classDeclaration);
+        showChilds(node, classDeclaration, false);
     }
 
     /**
@@ -535,7 +546,7 @@ public class Main {
 
         if (!classDeclaration.haveMethod(name)) {
             Descriptor descriptor = classDeclaration.addMethod(node, typeAndName);
-            showChilds(node, descriptor);
+            showChilds(node, descriptor, false);
         } else {
             String errorMessage = "Class " + classDeclaration.getName() + " already have method with name " + name;
             showError(errorMessage);
@@ -586,7 +597,7 @@ public class Main {
 
         this.toFile(".limit stack " + 1 + methodDeclaration.getAllParameters().size());
         ((MethodDeclaration) descriptor).setWritedLocals(false);
-        showChilds(node, descriptor);
+        showChilds(node, descriptor, false);
     }
 
     /**
@@ -705,7 +716,8 @@ public class Main {
      *                            metodo e os parametros do metodo
      * @param descriptor          metodo onde esta a ser usada a funcao
      */
-    private void checkMethodWithDot(VariableDeclaration variableDeclaration, Node node, Descriptor descriptor, Boolean needPop) {
+    private void checkMethodWithDot(VariableDeclaration variableDeclaration, Node node, Descriptor descriptor,
+            Boolean needPop) {
         MethodDeclaration methodDeclaration = (MethodDeclaration) descriptor;
 
         if (node.jjtGetNumChildren() > 0 && node.jjtGetChild(0).jjtGetNumChildren() > 0
@@ -716,8 +728,7 @@ public class Main {
         } else {
             Boolean needAnd = false;
             SimpleNode[] simpleNodes = new SimpleNode[3];
-            if(node.jjtGetChild(0).jjtGetNumChildren() > 0 && node.jjtGetChild(0).jjtGetChild(0) instanceof ASTNot) {
-                System.out.println("*****************************");
+            if (node.jjtGetChild(0).jjtGetNumChildren() > 0 && node.jjtGetChild(0).jjtGetChild(0) instanceof ASTNot) {
                 simpleNodes[0] = (SimpleNode) node.jjtGetChild(0).jjtGetChild(0).jjtGetChild(0);
                 needAnd = true;
             } else {
@@ -727,7 +738,7 @@ public class Main {
             simpleNodes[1].str += "()";
             simpleNodes[2] = (SimpleNode) node.jjtGetChild(2);
             checkMethodAndParameters(methodDeclaration, variableDeclaration, simpleNodes, needPop);
-            if(needAnd) {
+            if (needAnd) {
                 toFile("ldc 0");
                 toFile("iand");
             }
@@ -755,9 +766,9 @@ public class Main {
             checkNewClassWithoutDot(methodDeclaration, simpleNode, variableDeclaration);
         } else {
             if (variableDeclaration.getType().equals("int")) {
-                checkVariableInt(methodDeclaration, variableDeclaration, simpleNode);
                 if (getVariable((MethodDeclaration) descriptor, child.str).getIsClassVariable()) {
                     toFile("aload 0");
+                    checkVariableInt(methodDeclaration, variableDeclaration, simpleNode);
                     try {
                         toFile("putfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
                                 + getSignature(variableDeclaration.getType()));
@@ -765,12 +776,13 @@ public class Main {
                         e.printStackTrace();
                     }
                 } else {
-                    toFile("istore " + ((MethodDeclaration) descriptor).getVariable(child.str).getIndex());
+                    checkVariableInt(methodDeclaration, variableDeclaration, simpleNode);
+                    toFile("istore " + getVariable((MethodDeclaration) descriptor, child.str).getIndex());
                 }
             } else if (variableDeclaration.getType().equals("boolean")) {
-                checkVariableBoolean(methodDeclaration, variableDeclaration, simpleNode, false);
-                if (((MethodDeclaration) descriptor).getVariable(child.str).getIsClassVariable()) {
+                if (getVariable((MethodDeclaration) descriptor, child.str).getIsClassVariable()) {
                     toFile("aload 0");
+                    checkVariableBoolean(methodDeclaration, variableDeclaration, simpleNode, false);
                     try {
                         toFile("putfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
                                 + getSignature(variableDeclaration.getType()));
@@ -778,7 +790,8 @@ public class Main {
                         e.printStackTrace();
                     }
                 } else {
-                    toFile("istore " + ((MethodDeclaration) descriptor).getVariable(child.str).getIndex());
+                    checkVariableBoolean(methodDeclaration, variableDeclaration, simpleNode, false);
+                    toFile("istore " + getVariable((MethodDeclaration) descriptor, child.str).getIndex());
                 }
             } else if (variableDeclaration.getType().equals("int[]")) {
 
@@ -812,8 +825,18 @@ public class Main {
         if (classDeclaration.getName().equals(simpleNodes[0].str) || simpleNodes[0].str.equals("this")
                 || (var2 != null && var2.getIsClassInstance())) {
             if (classDeclaration.haveMethod(simpleNodes[1].str)) {
-                if (var2 != null && var2.getIsClassInstance()) {
-                    toFile("aload " + var2.getIndex());
+                if (var2 != null) {
+                    if (var2.getIsClassVariable()) {
+                        toFile("aload 0");
+                        try {
+                            toFile("getfield " + classDeclaration.getName() + "/" + var2.getName() + " "
+                                    + getSignature(var2.getType()));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        toFile("aload " + var2.getIndex());
+                    }
                 } else {
                     toFile("aload 0");
                 }
@@ -879,6 +902,27 @@ public class Main {
                                 }
                             }
                         }
+                    } else if(variableDeclaration.getIsArray()) {                    
+                        for (Integer i = 0; i < method.getAllParameters().size(); i++) {
+                            if (method.getAllParameters().get(i).getType().equals("int")) {
+                                SimpleNode child = (SimpleNode) simpleNodes[2].jjtGetChild(i);
+                                checkVariableInt(methodDeclaration, null, child);
+                            } else if (method.getAllParameters().get(i).getType().equals("boolean")) {
+                                SimpleNode child = (SimpleNode) simpleNodes[2].jjtGetChild(i);
+                                checkVariableBoolean(methodDeclaration, null, child, false);
+                            } else if (method.getAllParameters().get(i).getType().equals("int[]")) {
+                                SimpleNode child2 = (SimpleNode) simpleNodes[2].jjtGetChild(i);
+                                checkVariableIntArray(methodDeclaration, null, child2);
+                            }
+
+                            try {
+                                stringBuilder.append(getSignature(method.getAllParameters().get(i).getType()));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    
+
                     }
                 } else {
                     for (Integer i = 0; i < simpleNodes[2].jjtGetNumChildren(); i++) {
@@ -905,7 +949,22 @@ public class Main {
                                 if (child.jjtGetNumChildren() > 0 && child.jjtGetChild(0) instanceof ASTBracket) {
                                     if (var.getIsArray()) {
                                         SimpleNode x = (SimpleNode) child.jjtGetChild(0).jjtGetChild(0);
-                                        toFile("aload " + var.getIndex());
+                                        // toFile("aload " + var.getIndex());
+
+
+                                        if (var.getIsClassVariable()) {
+                                            toFile("aload 0");
+                                            try {
+                                                toFile("getfield " + classDeclaration.getName() + "/" + var.getName() + " "
+                                                        + getSignature(var.getType()));
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                        } else {
+                                            toFile("aload " + var.getIndex());
+                                        }
+
+
                                         checkVariableInt(methodDeclaration, variableDeclaration, x);
                                         toFile("iaload");
                                         try {
@@ -970,8 +1029,11 @@ public class Main {
             }
             if(needPop == true && !stringBuilder.toString().substring(stringBuilder.toString().length() - 1, stringBuilder.toString().length()).equals("V")) {
                 toFile("pop");
-
-            }
+            } else if(variableDeclaration != null && !variableDeclaration.getIsArray()) {
+                // toFile("istore " + variableDeclaration.getIndex());
+            }/*  else if(variableDeclaration != null && variableDeclaration.getIsArray()) {
+                toFile("astore " + variableDeclaration.getIndex());
+            } */
         }
     }
 
@@ -1006,6 +1068,9 @@ public class Main {
                 showError(errorMessage);
             }
         } else {
+            if (variableDeclaration.getIsClassVariable()) {
+                toFile("aload 0");
+            }
             String name = simpleNode.str;
             VariableDeclaration dest = getVariable(methodDeclaration, name);
             if (dest != null && dest.getIsArray()) {
@@ -1014,13 +1079,13 @@ public class Main {
                     if (dest.getIsClassVariable()) {
                         toFile("aload 0");
                         try {
-                            toFile("putfield " + classDeclaration.getName() + "/" + dest.getName() + " "
+                            toFile("getfield " + classDeclaration.getName() + "/" + dest.getName() + " "
                                     + getSignature(dest.getType()));
                         } catch (Exception e1) {
                             e1.printStackTrace();
                         }
                     } else {
-                        toFile("astore " + dest.getIndex());
+                        toFile("aload " + dest.getIndex());
                     }
                 } else {
                     String errorMessage = "The variable " + name + " dont be initialized";
@@ -1035,6 +1100,17 @@ public class Main {
                     String errorMessage = "The variable " + name + " is not a array";
                     showError(errorMessage);
                 }
+
+            }
+            if (variableDeclaration.getIsClassVariable()) {
+                try {
+                    toFile("putfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
+                            + getSignature(variableDeclaration.getType()));
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            } else {
+                toFile("astore " + variableDeclaration.getIndex());
             }
         }
     }
@@ -1056,16 +1132,7 @@ public class Main {
         checkVariableInt(methodDeclaration, null, child);
         variableDeclaration.setInitiated(true);
         toFile("newarray int");
-        if (variableDeclaration.getIsClassVariable()) {
-            try {
-                toFile("putfield " + classDeclaration.getName() + "/" + variableDeclaration.getName() + " "
-                        + getSignature(variableDeclaration.getType()));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            toFile("astore " + variableDeclaration.getIndex());
-        }
+
     }
 
     /**
@@ -1137,7 +1204,8 @@ public class Main {
                 }
                 if (varDest.getIsClassVariable()) {
                     try {
-                        toFile("putfield " + classDeclaration.getName() + "/" + varDest.getName() + " "
+                        toFile("aload 0");
+                        toFile("getfield " + classDeclaration.getName() + "/" + varDest.getName() + " "
                                 + getSignature(varDest.getType()));
                     } catch (Exception e1) {
                         e1.printStackTrace();
@@ -1248,7 +1316,7 @@ public class Main {
             toFile("iand");
         } else {
             checkIfExistVariableAndYourType(methodDeclaration, simpleNode.str, "boolean");
-            VariableDeclaration varDest = methodDeclaration.getVariable(simpleNode.str);
+            VariableDeclaration varDest = getVariable(methodDeclaration, simpleNode.str);
             if (variableDeclaration != null && !variableDeclaration.getInitiated()) {
                 variableDeclaration.setInitiated(true);
             }
@@ -1273,8 +1341,8 @@ public class Main {
                 showError(errorMessage);
             }
         } else if (methodDeclaration.haveVariable(name)) {
-            if (methodDeclaration.getVariable(name).getType().equals(type)) {
-                methodDeclaration.getVariable(name).setInitiated(true);
+            if (getVariable(methodDeclaration, name).getType().equals(type)) {
+                getVariable(methodDeclaration, name).setInitiated(true);
             } else {
                 String errorMessage = "Type of " + name + " is not " + type;
                 showError(errorMessage);
